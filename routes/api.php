@@ -34,6 +34,12 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
         });
     });
 
+    $api->get('/resume', 'App\Http\Controllers\PropertyController@resume');
+    $api->get('/properties', 'App\Http\Controllers\PropertyController@index');
+    $api->get('/properties/filters', 'App\Http\Controllers\PropertyController@filters');
+    $api->post('/properties/note', 'App\Http\Controllers\PropertyController@note');
+    $api->get('/properties/{id}', 'App\Http\Controllers\PropertyController@findById');
+
     /*
      * Authenticated routes
      */
