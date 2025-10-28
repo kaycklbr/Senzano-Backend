@@ -45,6 +45,7 @@ class Property extends BaseModel
      */
     protected $fillable = [
         'crm_origin',
+        'crm_code',
         'external_id',
         'code',
         'title',
