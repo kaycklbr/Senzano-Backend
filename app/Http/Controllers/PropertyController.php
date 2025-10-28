@@ -75,8 +75,8 @@ class PropertyController extends Controller
 
     public function resume(Request $request){
 
-        $imobziProperties = Property::where('destaque', true)->where('crm_origin', 'imobzi')->inRandomOrder()->limit(3)->get();
-        $imoviewProperties = Property::where('destaque', true)->where('crm_origin', 'imoview')->inRandomOrder()->limit(3)->get();
+        $imobziProperties = Property::where('destaque', true)->where('crm_origin', 'imobzi')->inRandomOrder()->limit(9)->get();
+        $imoviewProperties = Property::where('destaque', true)->where('crm_origin', 'imoview')->inRandomOrder()->limit(9)->get();
         $destaqueProperties = Property::where('destaque', true)->inRandomOrder()->limit(3)->get();
 
         return response()->json([
@@ -88,12 +88,18 @@ class PropertyController extends Controller
     }
 
     public function findById(Request $request, $id){
-        $property = Property::find($id);
+        $property = Property::where($id)->orWhere('slug', $id)->first();
+
+        if(!$property){
+            return response()->json([
+                'message' => 'Não encontrado'
+            ], 404);
+        }
 
         if($property->crm_origin == 'imobzi'){
             $imobziService = new ImobziService();
             $imobziService->property_detail($property->external_id);
-            $property = Property::find($id);
+            $property = Property::where($id)->orWhere('slug', $id)->first();
         }
 
         $similar = Property::where('crm_origin', $property->crm_origin)->limit(3)->inRandomOrder()->get();
