@@ -88,7 +88,7 @@ class PropertyController extends Controller
     }
 
     public function findById(Request $request, $id){
-        $property = Property::where($id)->orWhere('slug', $id)->first();
+        $property = Property::where('id', $id)->orWhere('slug', $id)->first();
 
         if(!$property){
             return response()->json([
@@ -99,7 +99,7 @@ class PropertyController extends Controller
         if($property->crm_origin == 'imobzi'){
             $imobziService = new ImobziService();
             $imobziService->property_detail($property->external_id);
-            $property = Property::where($id)->orWhere('slug', $id)->first();
+            $property = Property::where('id', $id)->orWhere('slug', $id)->first();
         }
 
         $similar = Property::where('crm_origin', $property->crm_origin)->limit(3)->inRandomOrder()->get();
