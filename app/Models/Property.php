@@ -48,6 +48,7 @@ class Property extends BaseModel
         'external_id',
         'code',
         'title',
+        'slug',
         'description',
         'sale_value',
         'rental_value',

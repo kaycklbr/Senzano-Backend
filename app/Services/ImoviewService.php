@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use App\Models\Property;
+use Illuminate\Support\Str;
 
 class ImoviewService
 {
@@ -67,6 +68,7 @@ class ImoviewService
                         'bathroom' => $item['numerobanhos'] ?? null,
                         'suite' => $item['numerosuites'] ?? null,
                         'garage' => $item['numerovagas'] ?? null,
+                        'slug' => Str::slug($item['titulo'] . ' ' . $item['codigo']),
                         'cover_photo' => $this->getPhotos($item),
                         'latitude' => $this->parseDecimal($item['latitude'] ?? null),
                         'longitude' => $this->parseDecimal($item['longitude'] ?? null),

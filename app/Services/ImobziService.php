@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Property;
+use Illuminate\Support\Str;
 
 class ImobziService
 {
@@ -55,6 +56,7 @@ class ImobziService
                     'bathroom' => $item['bathroom'] ?? null,
                     'suite' => $item['suite'] ?? null,
                     'garage' => $item['garage'] ?? null,
+                    'slug' => Str::slug($item['title'] . ' ' . $item['property_id']),
                     'cover_photo' => $this->getPhotos($item),
                     'latitude' => $this->parseDecimal($item['latitude'] ?? null),
                     'longitude' => $this->parseDecimal($item['longitude'] ?? null),
