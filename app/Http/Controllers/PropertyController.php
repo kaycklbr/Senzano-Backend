@@ -24,23 +24,32 @@ class PropertyController extends Controller
         $query = Property::query();
 
         if ($request->filled('city')) {
-            $query->whereRaw('TRIM(LOWER(city)) = ?', [trim(strtolower($request->city))]);
+            $cities = array_map('trim', explode(',', strtolower($request->city)));
+            $query->whereIn(\DB::raw('TRIM(LOWER(city))'), $cities);
         }
 
         if ($request->filled('neighborhood')) {
-            $query->whereRaw('TRIM(LOWER(neighborhood)) = ?', [trim(strtolower($request->neighborhood))]);
+            $neighborhoods = array_map('trim', explode(',', strtolower($request->neighborhood)));
+            $query->whereIn(\DB::raw('TRIM(LOWER(neighborhood))'), $neighborhoods);
         }
 
         if ($request->filled('address')) {
-            $query->whereRaw('TRIM(LOWER(address)) LIKE ?', ['%' . trim(strtolower($request->address)) . '%']);
+            $addresses = array_map('trim', explode(',', strtolower($request->address)));
+            $query->where(function($q) use ($addresses) {
+                foreach ($addresses as $address) {
+                    $q->orWhereRaw('TRIM(LOWER(address)) LIKE ?', ['%' . $address . '%']);
+                }
+            });
         }
 
         if ($request->filled('bedroom')) {
-            $query->where('bedroom', $request->bedroom);
+            $bedrooms = array_map('trim', explode(',', $request->bedroom));
+            $query->whereIn('bedroom', $bedrooms);
         }
 
         if ($request->filled('property_type')) {
-            $query->whereRaw('TRIM(LOWER(property_type)) = ?', [trim(strtolower($request->property_type))]);
+            $types = array_map('trim', explode(',', strtolower($request->property_type)));
+            $query->whereIn(\DB::raw('TRIM(LOWER(property_type))'), $types);
         }
 
         if ($request->filled('crm_origin')) {
@@ -101,6 +110,16 @@ class PropertyController extends Controller
             $baseQuery->where('crm_origin', $request->crm_origin);
         }
 
+        if ($request->filled('city')) {
+            $cities = array_map('trim', explode(',', strtolower($request->city)));
+            $baseQuery->whereIn(\DB::raw('TRIM(LOWER(city))'), $cities);
+        }
+
+        if ($request->filled('neighborhood')) {
+            $neighborhoods = array_map('trim', explode(',', strtolower($request->neighborhood)));
+            $baseQuery->whereIn(\DB::raw('TRIM(LOWER(neighborhood))'), $neighborhoods);
+        }
+
         $filters = [
             'cities' => (clone $baseQuery)->selectRaw('TRIM(city) as city')
                 ->whereNotNull('city')
@@ -125,24 +144,12 @@ class PropertyController extends Controller
             ->whereNotNull('neighborhood')
             ->where('neighborhood', '!=', '');
 
-        if ($request->filled('city')) {
-            $neighborhoodQuery->whereRaw('TRIM(LOWER(city)) = ?', [trim(strtolower($request->city))]);
-        }
-
         $filters['neighborhoods'] = $neighborhoodQuery->distinct()->orderBy('neighborhood')->pluck('neighborhood');
 
         // Filtro cascata para ruas
         $addressQuery = (clone $baseQuery)->selectRaw('TRIM(address) as address')
             ->whereNotNull('address')
             ->where('address', '!=', '');
-
-        if ($request->filled('city')) {
-            $addressQuery->whereRaw('TRIM(LOWER(city)) = ?', [trim(strtolower($request->city))]);
-        }
-
-        if ($request->filled('neighborhood')) {
-            $addressQuery->whereRaw('TRIM(LOWER(neighborhood)) = ?', [trim(strtolower($request->neighborhood))]);
-        }
 
         $filters['addresses'] = $addressQuery->distinct()->orderBy('address')->pluck('address');
 
