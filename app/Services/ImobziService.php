@@ -28,13 +28,15 @@ class ImobziService
 
         foreach ($response->json('properties_map', []) as $item) {
             $apiExternalIds[] = $item['property_id'];
+
+            $title = "{$item['property_type']} em {$item['neighborhood']}";
             Property::updateOrCreate(
                 [
                     'external_id' => $item['property_id'],
                     'crm_origin' => 'imobzi',
                 ],
                 [
-                    'title' => "{$item['property_type']} em {$item['neighborhood']}",
+                    'title' => $title,
                     "crm_code" => $item['code'] ?? null,
                     'description' => $item['address'] ?? null,
                     'sale_value' => $item['sale_value'] ?? null,
@@ -56,7 +58,7 @@ class ImobziService
                     'bathroom' => $item['bathroom'] ?? null,
                     'suite' => $item['suite'] ?? null,
                     'garage' => $item['garage'] ?? null,
-                    'slug' => Str::slug($item['title'] . ' ' . $item['property_id']),
+                    'slug' => Str::slug($title . ' ' . $item['property_id']),
                     'cover_photo' => $this->getPhotos($item),
                     'latitude' => $this->parseDecimal($item['latitude'] ?? null),
                     'longitude' => $this->parseDecimal($item['longitude'] ?? null),
@@ -100,7 +102,7 @@ class ImobziService
                 'crm_origin' => 'imobzi',
             ],
             [
-                'title' => "{$item['property_type']} em {$item['neighborhood']}",
+                'title' => $item['site_title'],
                 'description' => $item['site_description'] ?? null,
                 "crm_code" => $item['code'] ?? null,
                 'sale_value' => $item['sale_value'] ?? null,
