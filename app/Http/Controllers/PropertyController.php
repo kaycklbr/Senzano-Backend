@@ -116,10 +116,10 @@ class PropertyController extends Controller
             $baseQuery->where('crm_origin', $request->crm_origin);
         }
 
-        if ($request->filled('city')) {
-            $cities = array_map('trim', explode(',', strtolower($request->city)));
-            $baseQuery->whereIn(\DB::raw('TRIM(LOWER(city))'), $cities);
-        }
+        // if ($request->filled('city')) {
+        //     $cities = array_map('trim', explode(',', strtolower($request->city)));
+        //     $baseQuery->whereIn(\DB::raw('TRIM(LOWER(city))'), $cities);
+        // }
 
         if ($request->filled('neighborhood')) {
             $neighborhoods = array_map('trim', explode(',', strtolower($request->neighborhood)));
