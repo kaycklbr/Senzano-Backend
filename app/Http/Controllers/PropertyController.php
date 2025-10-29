@@ -150,6 +150,11 @@ class PropertyController extends Controller
             ->whereNotNull('neighborhood')
             ->where('neighborhood', '!=', '');
 
+        if ($request->filled('city')) {
+            $cities = array_map('trim', explode(',', strtolower($request->city)));
+            $neighborhoodQuery->whereIn(\DB::raw('TRIM(LOWER(cities))'), $cities);
+        }
+
         $filters['neighborhoods'] = $neighborhoodQuery->distinct()->orderBy('neighborhood')->pluck('neighborhood');
 
         // Filtro cascata para ruas
