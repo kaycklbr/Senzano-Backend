@@ -152,8 +152,7 @@ class PropertyController extends Controller
 
         if ($request->filled('city')) {
             $cities = array_map('trim', explode(',', strtolower($request->city)));
-            $neighborhoodQuery->whereIn(\DB::raw('TRIM(LOWER(        if ($request->filled('city')) {
-))'), $cities);
+            $neighborhoodQuery->whereIn(\DB::raw('TRIM(LOWER(city))'), $cities);
         }
 
         $filters['neighborhoods'] = $neighborhoodQuery->distinct()->orderBy('neighborhood')->pluck('neighborhood');
