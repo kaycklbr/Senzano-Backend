@@ -178,22 +178,27 @@ class PropertyController extends Controller
             'lastname' => 'required|string',
             'email' => 'required|email',
             'cellphone' => 'required|string',
-            'message' => 'nullable|string'
+            'message' => 'nullable|string',
+            'type' => 'nullable|string',
         ]);
 
-        if(!$request->has('property_id')){
+        if(!$request->has('property_id') && !$request->has('type')){
             return response()->json(['error' => 'Erro ao criar lead'], 500);
         }
 
-        $property = Property::find($request->property_id);
+        $property = $request->has('property_id') ? Property::find($request->property_id) : null;
 
 
-        if($property->crm_origin == 'imobzi'){
+        if(($property && $property->crm_origin == 'imobzi') || ($request->has('type') && $request->type == 'venda')){
             $imobziService = new ImobziService();
 
             $message = $request->message;
 
-            $message = "Imóvel:" . $property->title . "\nCódigo:". $property->crm_code  ."\n\nMensagem:\n".$message;
+            if($property){
+                $message = "Imóvel:" . $property->title . "\nCódigo:". $property->crm_code  ."\n\nMensagem:\n".$message;
+            }else{
+                $message = "Tenho interesse em imóveis para " . ($request->type == 'venda' ? 'venda' : 'locação');
+            }
 
             $lead = $imobziService->saveLead(
                 $request->firstname,
@@ -208,6 +213,9 @@ class PropertyController extends Controller
             if (!$lead) {
                 return response()->json(['error' => 'Erro ao criar lead'], 500);
             }
+
+        }else{
+
 
         }
 
