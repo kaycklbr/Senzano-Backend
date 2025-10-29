@@ -121,10 +121,10 @@ class PropertyController extends Controller
         //     $baseQuery->whereIn(\DB::raw('TRIM(LOWER(city))'), $cities);
         // }
 
-        if ($request->filled('neighborhood')) {
-            $neighborhoods = array_map('trim', explode(',', strtolower($request->neighborhood)));
-            $baseQuery->whereIn(\DB::raw('TRIM(LOWER(neighborhood))'), $neighborhoods);
-        }
+        // if ($request->filled('neighborhood')) {
+        //     $neighborhoods = array_map('trim', explode(',', strtolower($request->neighborhood)));
+        //     $baseQuery->whereIn(\DB::raw('TRIM(LOWER(neighborhood))'), $neighborhoods);
+        // }
 
         $filters = [
             'cities' => (clone $baseQuery)->selectRaw('TRIM(city) as city')
@@ -161,6 +161,11 @@ class PropertyController extends Controller
         $addressQuery = (clone $baseQuery)->selectRaw('TRIM(address) as address')
             ->whereNotNull('address')
             ->where('address', '!=', '');
+
+        if ($request->filled('neighborhood')) {
+            $neighborhoods = array_map('trim', explode(',', strtolower($request->neighborhood)));
+            $addressQuery->whereIn(\DB::raw('TRIM(LOWER(neighborhood))'), $neighborhoods);
+        }
 
         $filters['addresses'] = $addressQuery->distinct()->orderBy('address')->pluck('address');
 
