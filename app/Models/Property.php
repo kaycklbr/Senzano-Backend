@@ -58,6 +58,7 @@ class Property extends BaseModel
         'iptu',
         'property_type',
         'finality',
+        'destination',
         'status',
         'address',
         'address_complement',
