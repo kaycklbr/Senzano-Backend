@@ -43,6 +43,7 @@ class ImobziService
                     'rental_value' => $item['rental_value'] ?? null,
                     'property_type' => $item['property_type'] ?? null,
                     'finality' => $item['finality'] ?? null,
+                    'destination' => $item['finality'] ?? null,
                     'destaque' => $item['stage'] == 'launch',
                     'status' => $item['status'] ?? null,
                     'address' => $item['address'] ?? null,
@@ -165,7 +166,7 @@ class ImobziService
     private function getVideos($item)
     {
         $videos = [];
-        
+
         if (isset($item['multimidias']) && is_array($item['multimidias'])) {
             foreach ($item['multimidias'] as $multimidia) {
                 if (isset($multimidia['category']) && $multimidia['category'] === 'videos' && isset($multimidia['url'])) {
@@ -173,7 +174,7 @@ class ImobziService
                 }
             }
         }
-        
+
         return !empty($videos) ? implode(',', array_unique($videos)) : null;
     }
 
