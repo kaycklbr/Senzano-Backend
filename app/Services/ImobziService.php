@@ -60,6 +60,7 @@ class ImobziService
                     'garage' => $item['garage'] ?? null,
                     'slug' => Str::slug($title . ' ' . $item['property_id']),
                     'cover_photo' => $this->getPhotos($item),
+                    'videos' => $this->getVideos($item),
                     'latitude' => $this->parseDecimal($item['latitude'] ?? null),
                     'longitude' => $this->parseDecimal($item['longitude'] ?? null),
                 ]
@@ -126,6 +127,7 @@ class ImobziService
                 'suite' => $item['suite'] ?? null,
                 'garage' => $item['garage'] ?? null,
                 'cover_photo' => $this->getPhotos($item),
+                'videos' => $this->getVideos($item),
                 'latitude' => $this->parseDecimal($item['latitude'] ?? null),
                 'longitude' => $this->parseDecimal($item['longitude'] ?? null),
             ]
@@ -158,6 +160,21 @@ class ImobziService
         }
 
         return !empty($photos) ? implode(',', array_unique($photos)) : null;
+    }
+
+    private function getVideos($item)
+    {
+        $videos = [];
+        
+        if (isset($item['multimidias']) && is_array($item['multimidias'])) {
+            foreach ($item['multimidias'] as $multimidia) {
+                if (isset($multimidia['category']) && $multimidia['category'] === 'videos' && isset($multimidia['url'])) {
+                    $videos[] = $multimidia['url'];
+                }
+            }
+        }
+        
+        return !empty($videos) ? implode(',', array_unique($videos)) : null;
     }
 
     public function saveLead($firstname, $lastname, $email, $cellphone, $countryCode = '55', $content = null)

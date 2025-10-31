@@ -47,6 +47,7 @@ return new class extends Migration {
 
             // Mídia
             $table->text('cover_photo')->nullable();
+            $table->text('videos')->nullable();
 
             // Localização
             $table->decimal('latitude', 10, 7)->nullable();

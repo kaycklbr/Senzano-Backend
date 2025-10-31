@@ -73,6 +73,7 @@ class Property extends BaseModel
         'suite',
         'garage',
         'cover_photo',
+        'videos',
         'latitude',
         'longitude',
     ];
