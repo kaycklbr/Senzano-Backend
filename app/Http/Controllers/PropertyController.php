@@ -56,6 +56,10 @@ class PropertyController extends Controller
             $query->where('crm_origin', $request->crm_origin);
         }
 
+        if ($request->filled('destination')) {
+            $query->where('destination', 'LIKE', '%' . $request->destination . '%');
+        }
+
         if ($request->filled('min_price')) {
             $query->where(function($q) use ($request) {
                 $q->where('sale_value', '>=', $request->min_price);

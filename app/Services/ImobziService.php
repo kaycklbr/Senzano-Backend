@@ -109,6 +109,7 @@ class ImobziService
                 'rental_value' => $item['rental_value'] ?? null,
                 'property_type' => $item['property_type'] ?? null,
                 'finality' => $item['finality'] ?? null,
+                'destination' => $item['finality'] ?? null,
                 'status' => $item['status'] ?? null,
                 'address' => $item['address'] ?? null,
                 'address_complement' => $item['address_complement'] ?? null,

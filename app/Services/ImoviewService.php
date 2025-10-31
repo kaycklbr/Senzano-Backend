@@ -54,6 +54,7 @@ class ImoviewService
                         'iptu' => $this->parseValue($item['valoriptu']),
                         'property_type' => $item['tipo'] ?? null,
                         'finality' => $item['finalidade'] ?? null,
+                        'destination' => $item['destinacao'] ?? null,
                         'status' => $item['situacao'] ?? null,
                         'address' => $item['endereco'] ?? null,
                         'neighborhood' => $item['bairro'] ?? null,
