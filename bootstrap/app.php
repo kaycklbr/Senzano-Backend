@@ -3,7 +3,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Fruitcake\Cors\HandleCors;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,7 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
             // \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Specialtactics\L5Api\Http\Middleware\SnakeCaseInputParameterKeys::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            HandleCors::class,
         ]);
 
         // Aliases
