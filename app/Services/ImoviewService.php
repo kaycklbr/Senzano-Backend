@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class ImoviewService
 {
-    protected string $baseUrl = 'https://api.imoview.com.br/Imovel/RetornarImoveisDisponiveis';
+    protected string $baseUrl = 'https://api.imoview.com.br';
 
     public function import()
     {
@@ -21,7 +21,7 @@ class ImoviewService
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
                 'chave' => env('IMOVIEW_KEY'),
-            ])->post($this->baseUrl, [
+            ])->post($this->baseUrl.'/Imovel/RetornarImoveisDisponiveis', [
                 'numeroPagina' => $page,
                 'numeroRegistros' => 20,
             ]);
