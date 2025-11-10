@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\ImobziService;
+use App\Services\ImoviewService;
 use App\Transformers\BaseTransformer;
 use Illuminate\Http\Request;
 use App\Models\Property;
@@ -192,23 +193,25 @@ class PropertyController extends Controller
 
         $property = $request->has('property_id') ? Property::find($request->property_id) : null;
 
+        $message = $request->message;
+
+        if($property){
+            $message = "Imóvel:" . $property->title . "\nCódigo:". $property->crm_code  ."\n\nMensagem:\n".$message;
+        }else{
+            $message = "Tenho interesse em imóveis para " . ($request->type == 'venda' ? 'venda' : 'locação');
+        }
+
+        $cellphone = preg_replace('/\D/', '', $request->cellphone);
+
 
         if(($property && $property->crm_origin == 'imobzi') || ($request->has('type') && $request->type == 'venda')){
             $imobziService = new ImobziService();
-
-            $message = $request->message;
-
-            if($property){
-                $message = "Imóvel:" . $property->title . "\nCódigo:". $property->crm_code  ."\n\nMensagem:\n".$message;
-            }else{
-                $message = "Tenho interesse em imóveis para " . ($request->type == 'venda' ? 'venda' : 'locação');
-            }
 
             $lead = $imobziService->saveLead(
                 $request->firstname,
                 $request->lastname,
                 $request->email,
-                $request->cellphone,
+                $cellphone,
                 '55',
                 $message
             );
@@ -219,7 +222,17 @@ class PropertyController extends Controller
             }
 
         }else{
+            $imoviewService = new ImoviewService();
 
+            $lead = $imoviewService->saveLead(
+                $request->firstname,
+                $request->lastname,
+                $request->email,
+                $cellphone,
+                '55',
+                $message,
+                $property ? $property->external_id : null
+            );
 
         }
 

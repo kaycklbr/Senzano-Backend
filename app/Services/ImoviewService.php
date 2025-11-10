@@ -86,6 +86,36 @@ class ImoviewService
             ->delete();
     }
 
+    public function saveLead($firstname, $lastname, $email, $cellphone, $countryCode = '55', $content = '', $codigoimovel = null)
+    {
+        $data = [
+            "nome" => $firstname . ' ' . $lastname,
+            "telefone" => $countryCode . $cellphone,
+            "email" => $email,
+            "finalidade" => 1,
+            "anotacoes" => $content,
+        ];
+
+        if($codigoimovel){
+            $data['codigoimovel'] = $codigoimovel;
+        }
+
+        $leadResponse = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+            'chave' => env('IMOVIEW_KEY')
+        ])->post("{$this->baseUrl}/Lead/IncluirLead", $data);
+
+        if ($leadResponse->failed()) {
+            \Log::error('Erro ao criar lead no Imobzi', ['body' => $leadResponse->body()]);
+            return null;
+        }
+
+        $leadData = $leadResponse->json();
+
+        return $leadData;
+    }
+
     private function parseValue($value)
     {
         if (empty($value)) return null;
