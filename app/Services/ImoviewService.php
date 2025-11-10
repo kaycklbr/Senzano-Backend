@@ -93,6 +93,7 @@ class ImoviewService
             "telefone" => $countryCode . $cellphone,
             "email" => $email,
             "finalidade" => 1,
+            "midia" => "Site Senzano",
             "anotacoes" => $content,
         ];
 
