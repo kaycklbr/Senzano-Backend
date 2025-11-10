@@ -195,10 +195,12 @@ class PropertyController extends Controller
 
         $message = $request->message;
 
-        if($property){
-            $message = "Imóvel:" . $property->title . "\nCódigo:". $property->crm_code  ."\n\nMensagem:\n".$message;
-        }else{
-            $message = "Tenho interesse em imóveis para " . ($request->type == 'venda' ? 'venda' : 'locação');
+        if(empty($message)){
+            if($property){
+                $message = "Imóvel:" . $property->title . "\nCódigo:". $property->crm_code  ."\n\nMensagem:\n".$message;
+            }else{
+                $message = "Tenho interesse em imóveis para " . ($request->type == 'venda' ? 'venda' : 'locação');
+            }
         }
 
         $cellphone = preg_replace('/\D/', '', $request->cellphone);

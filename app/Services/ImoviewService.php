@@ -105,7 +105,7 @@ class ImoviewService
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
             'chave' => env('IMOVIEW_KEY')
-        ])->post("{$this->baseUrl}/Lead/IncluirLeadCaptacao", $data);
+        ])->post("{$this->baseUrl}/Lead/IncluirLead", $data);
 
         if ($leadResponse->failed()) {
             \Log::error('Erro ao criar lead no Imobzi', ['body' => $leadResponse->body()]);
