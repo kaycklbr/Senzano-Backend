@@ -74,5 +74,41 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
         $api->group(['prefix' => 'roles'], function (Router $api) {
             $api->get('/', 'App\Http\Controllers\RoleController@getAll');
         });
+
+        /*
+         * Posts
+         */
+        $api->group(['prefix' => 'posts'], function (Router $api) {
+            $api->get('/', 'App\Http\Controllers\PostController@getAll');
+            $api->get('/{uuid}', 'App\Http\Controllers\PostController@get');
+            $api->post('/', 'App\Http\Controllers\PostController@post');
+            $api->put('/{uuid}', 'App\Http\Controllers\PostController@put');
+            $api->patch('/{uuid}', 'App\Http\Controllers\PostController@patch');
+            $api->delete('/{uuid}', 'App\Http\Controllers\PostController@delete');
+        });
+
+        /*
+         * Settings
+         */
+        $api->group(['prefix' => 'settings'], function (Router $api) {
+            $api->get('/', 'App\Http\Controllers\SettingController@getAll');
+            $api->get('/{id}', 'App\Http\Controllers\SettingController@get');
+            $api->post('/', 'App\Http\Controllers\SettingController@post');
+            $api->put('/{id}', 'App\Http\Controllers\SettingController@put');
+            $api->patch('/{id}', 'App\Http\Controllers\SettingController@patch');
+            $api->delete('/{id}', 'App\Http\Controllers\SettingController@delete');
+        });
+
+        /*
+         * Pages
+         */
+        $api->group(['prefix' => 'pages'], function (Router $api) {
+            $api->get('/', 'App\Http\Controllers\PageController@getAll');
+            $api->get('/{uuid}', 'App\Http\Controllers\PageController@get');
+            $api->post('/', 'App\Http\Controllers\PageController@post');
+            $api->put('/{uuid}', 'App\Http\Controllers\PageController@put');
+            $api->patch('/{uuid}', 'App\Http\Controllers\PageController@patch');
+            $api->delete('/{uuid}', 'App\Http\Controllers\PageController@delete');
+        });
     });
 });
