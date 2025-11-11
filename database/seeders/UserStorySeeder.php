@@ -12,6 +12,7 @@ class UserStorySeeder extends BaseSeeder
      */
     const ADMIN_CREDENTIALS = [
         'email' => 'admin@admin.com',
+        'password' => 'admin123',
     ];
 
     public function runFake()
@@ -23,15 +24,16 @@ class UserStorySeeder extends BaseSeeder
         \App\Models\User::factory()->create([
             'name'         => 'Admin',
             'email'        => static::ADMIN_CREDENTIALS['email'],
+            'password'     => bcrypt(static::ADMIN_CREDENTIALS['password']),
             'primary_role' => $roles->where('name', 'admin')->first()->role_id,
         ]);
 
         // Create regular user
-        \App\Models\User::factory()->create([
-            'name'         => 'Bob',
-            'email'        => 'bob@bob.com',
-            'primary_role' => $roles->where('name', 'regular')->first()->role_id,
-        ]);
+        // \App\Models\User::factory()->create([
+        //     'name'         => 'Bob',
+        //     'email'        => 'bob@bob.com',
+        //     'primary_role' => $roles->where('name', 'regular')->first()->role_id,
+        // ]);
 
         // Get some random roles to assign to users
         $fakeRolesToAssignCount = 3;
