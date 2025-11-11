@@ -9,6 +9,21 @@ class Setting extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * @var string Primary key of the resource
+     */
+    public $primaryKey = 'id';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     */
+    public $incrementing = true;
+
+    /**
+     * The "type" of the auto-incrementing ID.
+     */
+    protected $keyType = 'int';
+
     protected $fillable = [
         'key',
         'value',

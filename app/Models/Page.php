@@ -27,7 +27,7 @@ class Page extends BaseModel
     public static function boot(): void
     {
         parent::boot();
-        
+
         static::creating(function ($model) {
             if (empty($model->id)) {
                 $model->id = (string) \Illuminate\Support\Str::uuid();
