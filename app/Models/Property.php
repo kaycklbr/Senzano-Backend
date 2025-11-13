@@ -79,6 +79,10 @@ class Property extends BaseModel
         'longitude',
     ];
 
+    protected $casts = [
+        'destaque' => 'boolean',
+    ];
+
     /**
      * @var array The attributes that should be hidden for arrays and API output
      */
