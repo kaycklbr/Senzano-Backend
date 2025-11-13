@@ -94,9 +94,9 @@ class PropertyController extends Controller
 
     public function resume(Request $request){
 
-        $imobziProperties = Property::where('destaque', 1)->where('crm_origin', 'imobzi')->inRandomOrder()->limit(9)->get();
-        $imoviewProperties = Property::where('destaque', 1)->where('crm_origin', 'imoview')->inRandomOrder()->limit(9)->get();
-        $destaqueProperties = Property::where('destaque', 1)->inRandomOrder()->limit(3)->get();
+        $imobziProperties = Property::where('destaque', 1)->where('crm_origin', 'imobzi')->orderByRaw('RAND()')->limit(9)->get();
+        $imoviewProperties = Property::where('destaque', 1)->where('crm_origin', 'imoview')->orderByRaw('RAND()')->limit(9)->get();
+        $destaqueProperties = Property::where('destaque', 1)->orderByRaw('RAND()')->limit(3)->get();
 
         return response()->json([
             'destaque' => $destaqueProperties,
@@ -121,7 +121,7 @@ class PropertyController extends Controller
             $property = Property::where('id', $id)->orWhere('slug', $id)->first();
         }
 
-        $similar = Property::where('crm_origin', $property->crm_origin)->limit(3)->inRandomOrder()->get();
+        $similar = Property::where('crm_origin', $property->crm_origin)->orderByRaw('RAND()')->limit(3)->get();
 
         $property->similar = $similar;
         return response()->json($property);
