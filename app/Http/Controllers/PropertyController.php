@@ -53,12 +53,26 @@ class PropertyController extends Controller
             $query->whereIn(\DB::raw('TRIM(LOWER(property_type))'), $types);
         }
 
+        if ($request->filled('destaque')) {
+            $featured = $request->destaque;
+            $query->where('destaque', $featured);
+        }
+
         if ($request->filled('crm_origin')) {
             $query->where('crm_origin', $request->crm_origin);
         }
 
         if ($request->filled('destination')) {
             $query->where('destination', 'LIKE', '%' . $request->destination . '%');
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('crm_code', 'LIKE', '%' . $search . '%')
+                  ->orWhere('external_id', 'LIKE', '%' . $search . '%')
+                  ->orWhere('title', 'LIKE', '%' . $search . '%');
+            });
         }
 
         if ($request->filled('min_price')) {
