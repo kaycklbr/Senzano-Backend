@@ -39,6 +39,11 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
     $api->get('/properties/filters', 'App\Http\Controllers\PropertyController@filters');
     $api->post('/properties/note', 'App\Http\Controllers\PropertyController@note');
     $api->get('/properties/{id}', 'App\Http\Controllers\PropertyController@findById');
+    
+    // Public routes
+    $api->get('/page/{slug}', 'App\Http\Controllers\PageController@getBySlug');
+    $api->get('/post/{slug}', 'App\Http\Controllers\PostController@getBySlug');
+    $api->get('/posts', 'App\Http\Controllers\PostController@getPublicPosts');
 
     /*
      * Authenticated routes

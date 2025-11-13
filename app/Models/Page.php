@@ -18,11 +18,15 @@ class Page extends BaseModel
         'content',
         'slug',
         'image',
+        'show_in_home',
+        'show_in_footer',
         'active'
     ];
 
     protected $casts = [
         'active' => 'boolean',
+        'show_in_home' => 'boolean',
+        'show_in_footer' => 'boolean',
     ];
 
     public static function boot(): void
@@ -46,6 +50,8 @@ class Page extends BaseModel
             'content' => 'required|string',
             'slug' => 'nullable|string|unique:pages,slug,' . $this->id,
             'image' => 'nullable|string',
+            'show_in_home' => 'boolean',
+            'show_in_footer' => 'boolean',
             'active' => 'boolean'
         ];
     }
