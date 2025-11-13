@@ -17,6 +17,7 @@ class Page extends BaseModel
         'title',
         'content',
         'slug',
+        'image',
         'active'
     ];
 
@@ -44,6 +45,7 @@ class Page extends BaseModel
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'slug' => 'nullable|string|unique:pages,slug,' . $this->id,
+            'image' => 'nullable|string',
             'active' => 'boolean'
         ];
     }

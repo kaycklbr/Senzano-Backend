@@ -20,6 +20,7 @@ class Post extends BaseModel
         'seo_description',
         'type',
         'slug',
+        'image',
         'active'
     ];
 
@@ -50,6 +51,7 @@ class Post extends BaseModel
             'seo_description' => 'nullable|string|max:500',
             'type' => 'required|in:lancamento,empreendimento',
             'slug' => 'nullable|string|unique:posts,slug,' . $this->id,
+            'image' => 'nullable|string',
             'active' => 'boolean'
         ];
     }
