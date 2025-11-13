@@ -254,4 +254,16 @@ class PropertyController extends Controller
 
         return response()->json($lead);
     }
+    
+    public function toggleFeatured(Request $request, $id)
+    {
+        $property = Property::findOrFail($id);
+        $property->destaque = !$property->destaque;
+        $property->save();
+        
+        return response()->json([
+            'success' => true,
+            'destaque' => $property->destaque
+        ]);
+    }
 }

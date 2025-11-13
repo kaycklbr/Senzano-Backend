@@ -115,5 +115,10 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
             $api->patch('/{uuid}', 'App\Http\Controllers\PageController@patch');
             $api->delete('/{uuid}', 'App\Http\Controllers\PageController@delete');
         });
+        
+        /*
+         * Properties
+         */
+        $api->patch('/properties/{id}/toggle-featured', 'App\Http\Controllers\PropertyController@toggleFeatured');
     });
 });
