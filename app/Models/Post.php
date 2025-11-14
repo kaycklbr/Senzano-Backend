@@ -28,6 +28,13 @@ class Post extends BaseModel
         'active' => 'boolean',
     ];
 
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
+
     public static function boot(): void
     {
         parent::boot();

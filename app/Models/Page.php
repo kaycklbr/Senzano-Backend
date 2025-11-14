@@ -29,6 +29,13 @@ class Page extends BaseModel
         'show_in_footer' => 'boolean',
     ];
 
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
+
     public static function boot(): void
     {
         parent::boot();
