@@ -16,7 +16,7 @@ class SettingController extends Controller
     {
         $settings = Setting::pluck('value', 'key');
 
-        $footer_pages = Page::select(['title', 'slug'])->where('active', 1)->where('show_in_footer', 1)->get();
+        $footer_pages = Page::where('active', 1)->where('show_in_footer', 1)->get(['title', 'slug']);
         $settings['footer_pages'] = $footer_pages;
         return response()->json($settings);
     }
