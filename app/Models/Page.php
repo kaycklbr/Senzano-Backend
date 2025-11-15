@@ -57,8 +57,8 @@ class Page extends BaseModel
             'content' => 'required|string',
             'slug' => 'nullable|string|unique:pages,slug,' . $this->id,
             'image' => 'nullable|string',
-            'show_in_home' => 'boolean',
-            'show_in_footer' => 'boolean',
+            // 'show_in_home' => 'boolean',
+            // 'show_in_footer' => 'boolean',
             'active' => 'boolean'
         ];
     }
