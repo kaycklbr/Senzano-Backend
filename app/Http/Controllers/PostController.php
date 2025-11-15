@@ -15,17 +15,8 @@ class PostController extends Controller
     public function post(Request $request)
     {
         $this->authorizeUserAction('create');
+        $data = $request->all();
 
-        $data = [
-            'title' => $request->input('title'),
-            'content' => $request->input('content'),
-            'seo_title' => $request->input('seo_title'),
-            'seo_description' => $request->input('seo_description'),
-            'slug' => $request->input('slug'),
-            'type' => $request->input('type'),
-            'active' => $request->input('active') === '1',
-        ];
-        
         // Handle image upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -44,22 +35,14 @@ class PostController extends Controller
     public function put(Request $request, $uuid)
     {
         $model = static::$model::find($uuid);
-        $data = [
-            'title' => $request->input('title'),
-            'content' => $request->input('content'),
-            'seo_title' => $request->input('seo_title'),
-            'seo_description' => $request->input('seo_description'),
-            'slug' => $request->input('slug'),
-            'type' => $request->input('type'),
-            'active' => $request->input('active') === '1',
-        ];
-        
+        $data = $request->all();
+
         // Handle image upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $path = $image->store('posts', 'public');
             $data['image'] = $path;
-            
+
             // Delete old image if exists
             if ($model && $model->image) {
                 Storage::disk('public')->delete($model->image);
@@ -80,31 +63,31 @@ class PostController extends Controller
             return $this->response->item($model, $this->getTransformer())->setStatusCode(200);
         }
     }
-    
+
     public function getBySlug($slug)
     {
         $post = static::$model::where('slug', $slug)
             ->where('active', true)
             ->first();
-            
+
         if (!$post) {
             return response()->json(['error' => 'Post not found'], 404);
         }
-        
+
         return $this->response->item($post, $this->getTransformer());
     }
-    
+
     public function getPublicPosts()
     {
         $query = static::$model::where('active', true);
-        
+
         // Filter by type if provided
         if (request()->has('type')) {
             $query->where('type', request()->input('type'));
         }
-        
+
         $posts = $query->orderBy('created_at', 'desc')->get();
-        
+
         return $this->response->collection($posts, $this->getTransformer());
     }
 }

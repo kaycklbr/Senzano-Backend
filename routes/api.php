@@ -88,8 +88,8 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
             $api->get('/', 'App\Http\Controllers\PostController@getAll');
             $api->get('/{uuid}', 'App\Http\Controllers\PostController@get');
             $api->post('/', 'App\Http\Controllers\PostController@post');
-            $api->put('/{uuid}', 'App\Http\Controllers\PostController@put');
-            $api->patch('/{uuid}', 'App\Http\Controllers\PostController@patch');
+            $api->post('/{uuid}', 'App\Http\Controllers\PostController@put');
+            // $api->patch('/{uuid}', 'App\Http\Controllers\PostController@patch');
             $api->delete('/{uuid}', 'App\Http\Controllers\PostController@delete');
         });
 
