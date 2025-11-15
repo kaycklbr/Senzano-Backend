@@ -90,7 +90,19 @@ class PropertyController extends Controller
 
         $query->whereIn('status', ['available', 'Vago/Disponível']);
 
-        return $query->paginate(20);
+        $result = $query->paginate(20);
+        
+        // Adicionar estatísticas
+        $stats = [
+            'total' => Property::whereIn('status', ['available', 'Vago/Disponível'])->count(),
+            'imobzi' => Property::where('crm_origin', 'imobzi')->whereIn('status', ['available', 'Vago/Disponível'])->count(),
+            'imoview' => Property::where('crm_origin', 'imoview')->whereIn('status', ['available', 'Vago/Disponível'])->count(),
+        ];
+        
+        $result = $result->toArray();
+        $result['stats'] = $stats;
+        
+        return response()->json($result);
     }
 
     public function resume(Request $request){
