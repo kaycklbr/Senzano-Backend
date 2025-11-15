@@ -17,7 +17,7 @@ class PageController extends Controller
         $this->authorizeUserAction('create');
 
         $data = $request->all();
-        
+
         // Handle image upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -37,18 +37,21 @@ class PageController extends Controller
     {
         $model = static::$model::find($uuid);
         $data = $request->all();
-        
+
         // Convert boolean fields
+
+        return response()->json(var_dump($data));
+
         $data['active'] = $request->input('active') === '1' || $request->input('active') === true;
         $data['show_in_home'] = $request->input('show_in_home') === '1' || $request->input('show_in_home') === true;
         $data['show_in_footer'] = $request->input('show_in_footer') === '1' || $request->input('show_in_footer') === true;
-        
+
         // Handle image upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $path = $image->store('pages', 'public');
             $data['image'] = $path;
-            
+
             // Delete old image if exists
             if ($model && $model->image) {
                 Storage::disk('public')->delete($model->image);
@@ -69,17 +72,17 @@ class PageController extends Controller
             return $this->response->item($model, $this->getTransformer())->setStatusCode(200);
         }
     }
-    
+
     public function getBySlug($slug)
     {
         $page = static::$model::where('slug', $slug)
             ->where('active', true)
             ->first();
-            
+
         if (!$page) {
             return response()->json(['error' => 'Page not found'], 404);
         }
-        
+
         return $this->response->item($page, $this->getTransformer());
     }
 }
