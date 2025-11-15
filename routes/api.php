@@ -39,7 +39,7 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
     $api->get('/properties/filters', 'App\Http\Controllers\PropertyController@filters');
     $api->post('/properties/note', 'App\Http\Controllers\PropertyController@note');
     $api->get('/properties/{id}', 'App\Http\Controllers\PropertyController@findById');
-    
+
     // Public routes
     $api->get('/config', 'App\Http\Controllers\SettingController@getConfig');
     $api->get('/page/{slug}', 'App\Http\Controllers\PageController@getBySlug');
@@ -112,11 +112,11 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
             $api->get('/', 'App\Http\Controllers\PageController@getAll');
             $api->get('/{uuid}', 'App\Http\Controllers\PageController@get');
             $api->post('/', 'App\Http\Controllers\PageController@post');
-            $api->put('/{uuid}', 'App\Http\Controllers\PageController@put');
-            $api->patch('/{uuid}', 'App\Http\Controllers\PageController@patch');
+            $api->post('/{uuid}', 'App\Http\Controllers\PageController@put');
+            // $api->patch('/{uuid}', 'App\Http\Controllers\PageController@patch');
             $api->delete('/{uuid}', 'App\Http\Controllers\PageController@delete');
         });
-        
+
         /*
          * Properties
          */

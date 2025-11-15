@@ -16,14 +16,7 @@ class PageController extends Controller
     {
         $this->authorizeUserAction('create');
 
-        $data = [
-            'title' => $request->input('title'),
-            'content' => $request->input('content'),
-            'slug' => $request->input('slug'),
-            'active' => $request->input('active') === '1',
-            'show_in_home' => $request->input('show_in_home') === '1',
-            'show_in_footer' => $request->input('show_in_footer') === '1',
-        ];
+        $data = $request->all();
 
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -43,16 +36,7 @@ class PageController extends Controller
     public function put(Request $request, $uuid)
     {
         $model = static::$model::find($uuid);
-        $data = [
-            'title' => $request->input('title'),
-            'content' => $request->input('content'),
-            'slug' => $request->input('slug'),
-            'active' => $request->input('active') === '1',
-            'show_in_home' => $request->input('show_in_home') === '1',
-            'show_in_footer' => $request->input('show_in_footer') === '1',
-        ];
-
-        return response()->json(var_dump($data));
+        $data = $request->all();
 
         // Handle image upload
         if ($request->hasFile('image')) {
