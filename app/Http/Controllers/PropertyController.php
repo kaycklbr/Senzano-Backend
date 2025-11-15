@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Page;
 use App\Services\ImobziService;
 use App\Services\ImoviewService;
 use App\Transformers\BaseTransformer;
@@ -97,11 +98,13 @@ class PropertyController extends Controller
         $imobziProperties = Property::where('destaque', 1)->where('crm_origin', 'imobzi')->orderByRaw('RAND()')->limit(9)->get();
         $imoviewProperties = Property::where('destaque', 1)->where('crm_origin', 'imoview')->orderByRaw('RAND()')->limit(9)->get();
         $destaqueProperties = Property::where('destaque', 1)->orderByRaw('RAND()')->limit(3)->get();
+        $pages = Page::where('show_in_home', true)->where('active', 1)->get();
 
         return response()->json([
             'destaque' => $destaqueProperties,
             'venda' => $imobziProperties,
             'locacao' => $imoviewProperties,
+            'pages' => $pages
         ]);
 
     }

@@ -41,6 +41,7 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
     $api->get('/properties/{id}', 'App\Http\Controllers\PropertyController@findById');
     
     // Public routes
+    $api->get('/config', 'App\Http\Controllers\SettingController@getConfig');
     $api->get('/page/{slug}', 'App\Http\Controllers\PageController@getBySlug');
     $api->get('/post/{slug}', 'App\Http\Controllers\PostController@getBySlug');
     $api->get('/posts', 'App\Http\Controllers\PostController@getPublicPosts');
