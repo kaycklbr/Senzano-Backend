@@ -16,7 +16,14 @@ class PageController extends Controller
     {
         $this->authorizeUserAction('create');
 
-        $data = $request->all();
+        $data = [
+            'title' => $request->input('title'),
+            'content' => $request->input('content'),
+            'slug' => $request->input('slug'),
+            'active' => $request->input('active') === '1',
+            'show_in_home' => $request->input('show_in_home') === '1',
+            'show_in_footer' => $request->input('show_in_footer') === '1',
+        ];
 
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -36,15 +43,14 @@ class PageController extends Controller
     public function put(Request $request, $uuid)
     {
         $model = static::$model::find($uuid);
-        $data = $request->all();
-
-        // Convert boolean fields
-
-        return response()->json(var_dump($data));
-
-        $data['active'] = $request->input('active') === '1' || $request->input('active') === true;
-        $data['show_in_home'] = $request->input('show_in_home') === '1' || $request->input('show_in_home') === true;
-        $data['show_in_footer'] = $request->input('show_in_footer') === '1' || $request->input('show_in_footer') === true;
+        $data = [
+            'title' => $request->input('title'),
+            'content' => $request->input('content'),
+            'slug' => $request->input('slug'),
+            'active' => $request->input('active') === '1',
+            'show_in_home' => $request->input('show_in_home') === '1',
+            'show_in_footer' => $request->input('show_in_footer') === '1',
+        ];
 
         // Handle image upload
         if ($request->hasFile('image')) {

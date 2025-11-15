@@ -16,7 +16,15 @@ class PostController extends Controller
     {
         $this->authorizeUserAction('create');
 
-        $data = $request->all();
+        $data = [
+            'title' => $request->input('title'),
+            'content' => $request->input('content'),
+            'seo_title' => $request->input('seo_title'),
+            'seo_description' => $request->input('seo_description'),
+            'slug' => $request->input('slug'),
+            'type' => $request->input('type'),
+            'active' => $request->input('active') === '1',
+        ];
         
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -36,10 +44,15 @@ class PostController extends Controller
     public function put(Request $request, $uuid)
     {
         $model = static::$model::find($uuid);
-        $data = $request->all();
-        
-        // Convert boolean fields
-        $data['active'] = $request->input('active') === '1' || $request->input('active') === true;
+        $data = [
+            'title' => $request->input('title'),
+            'content' => $request->input('content'),
+            'seo_title' => $request->input('seo_title'),
+            'seo_description' => $request->input('seo_description'),
+            'slug' => $request->input('slug'),
+            'type' => $request->input('type'),
+            'active' => $request->input('active') === '1',
+        ];
         
         // Handle image upload
         if ($request->hasFile('image')) {
