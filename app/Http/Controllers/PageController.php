@@ -38,6 +38,11 @@ class PageController extends Controller
         $model = static::$model::find($uuid);
         $data = $request->all();
         
+        // Convert boolean fields
+        $data['active'] = $request->input('active') === '1' || $request->input('active') === true;
+        $data['show_in_home'] = $request->input('show_in_home') === '1' || $request->input('show_in_home') === true;
+        $data['show_in_footer'] = $request->input('show_in_footer') === '1' || $request->input('show_in_footer') === true;
+        
         // Handle image upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
