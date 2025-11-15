@@ -14,7 +14,7 @@ class SettingController extends Controller
 
     public function getConfig()
     {
-        $settings = Setting::pluck('value', 'key');
+        $settings = Setting::get()->pluck('value', 'key')->toArray();
 
         $footer_pages = Page::where('active', 1)->where('show_in_footer', 1)->get(['title', 'slug']);
         $settings['footer_pages'] = $footer_pages;
