@@ -52,6 +52,8 @@ class PageController extends Controller
             'show_in_footer' => $request->input('show_in_footer') === '1',
         ];
 
+        return response()->json(var_dump($data));
+
         // Handle image upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
