@@ -29,7 +29,7 @@ class ImobziSyncCommand extends Command
     {
         $this->info('Iniciando sincronização dos imóveis Imobzi...');
 
-        $properties = Property::where('crm_origin', 'imobzi')->get();
+        $properties = Property::where('crm_origin', 'imobzi')->whereNull('synced_at')->get();
         foreach($properties as $p){
             $imobzi->property_detail($p->external_id);
         }

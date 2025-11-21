@@ -24,6 +24,31 @@ class PropertyController extends Controller
 
     public function index(Request $request)
     {
+        if ($request->query('vrsync') == '1') {
+            return \Cache::remember('properties_all', 86400, function () {
+                return $this->getAllPropertiesData();
+            });
+        }
+        
+        return $this->getPropertiesWithFilters($request);
+    }
+    
+    private function getAllPropertiesData() {
+        $properties = Property::whereIn('status', ['available', 'Vago/Disponível'])->get();
+        
+        $stats = [
+            'total' => $properties->count(),
+            'imobzi' => $properties->where('crm_origin', 'imobzi')->count(),
+            'imoview' => $properties->where('crm_origin', 'imoview')->count(),
+        ];
+        
+        return response()->json([
+            'data' => $properties,
+            'stats' => $stats
+        ]);
+    }
+    
+    private function getPropertiesWithFilters(Request $request) {
         $query = Property::query();
 
         if ($request->filled('city')) {
@@ -93,7 +118,6 @@ class PropertyController extends Controller
 
         $result = $query->paginate(20);
 
-        // Adicionar estatísticas
         $stats = [
             'total' => Property::whereIn('status', ['available', 'Vago/Disponível'])->count(),
             'imobzi' => Property::where('crm_origin', 'imobzi')->whereIn('status', ['available', 'Vago/Disponível'])->count(),

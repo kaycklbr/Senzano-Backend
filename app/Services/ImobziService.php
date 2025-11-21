@@ -29,42 +29,50 @@ class ImobziService
         foreach ($response->json('properties_map', []) as $item) {
             $apiExternalIds[] = $item['property_id'];
 
+            $exists = Property::where('external_id', $item['property_id'])->first();
+
             $title = "{$item['property_type']} em {$item['neighborhood']}";
+
+            $dataToSave = [
+                "crm_code" => $item['code'] ?? null,
+                'sale_value' => $item['sale_value'] ?? null,
+                'rental_value' => $item['rental_value'] ?? null,
+                'property_type' => $item['property_type'] ?? null,
+                'finality' => $item['finality'] ?? null,
+                'destination' => $item['finality'] ?? null,
+                'destaque' => $item['stage'] == 'launch',
+                'status' => $item['status'] ?? null,
+                'address' => $item['address'] ?? null,
+                'address_complement' => $item['address_complement'] ?? null,
+                'neighborhood' => $item['neighborhood'] ?? null,
+                'city' => $item['city'] ?? null,
+                'state' => $item['state'] ?? null,
+                'zipcode' => $item['zipcode'] ?? null,
+                'country' => $item['country'] ?? 'Brasil',
+                'area_total' => $item['lot_area'] ?? null,
+                'area_useful' => $item['useful_area'] ?? null,
+                'bedroom' => $item['bedroom'] ?? null,
+                'bathroom' => $item['bathroom'] ?? null,
+                'suite' => $item['suite'] ?? null,
+                'garage' => $item['garage'] ?? null,
+                'slug' => Str::slug($title . ' ' . $item['property_id']),
+                'videos' => $this->getVideos($item),
+                'latitude' => $this->parseDecimal($item['latitude'] ?? null),
+                'longitude' => $this->parseDecimal($item['longitude'] ?? null),
+            ];
+
+            if(!$exists){
+                $dataToSave['title'] = $title;
+                $dataToSave['cover_photo'] = $this->getPhotos($item);
+                $dataToSave['description'] = $item['address'] ?? null;
+
+            }
             Property::updateOrCreate(
                 [
                     'external_id' => $item['property_id'],
                     'crm_origin' => 'imobzi',
                 ],
-                [
-                    'title' => $title,
-                    "crm_code" => $item['code'] ?? null,
-                    'description' => $item['address'] ?? null,
-                    'sale_value' => $item['sale_value'] ?? null,
-                    'rental_value' => $item['rental_value'] ?? null,
-                    'property_type' => $item['property_type'] ?? null,
-                    'finality' => $item['finality'] ?? null,
-                    'destination' => $item['finality'] ?? null,
-                    'destaque' => $item['stage'] == 'launch',
-                    'status' => $item['status'] ?? null,
-                    'address' => $item['address'] ?? null,
-                    'address_complement' => $item['address_complement'] ?? null,
-                    'neighborhood' => $item['neighborhood'] ?? null,
-                    'city' => $item['city'] ?? null,
-                    'state' => $item['state'] ?? null,
-                    'zipcode' => $item['zipcode'] ?? null,
-                    'country' => $item['country'] ?? 'Brasil',
-                    'area_total' => $item['lot_area'] ?? null,
-                    'area_useful' => $item['useful_area'] ?? null,
-                    'bedroom' => $item['bedroom'] ?? null,
-                    'bathroom' => $item['bathroom'] ?? null,
-                    'suite' => $item['suite'] ?? null,
-                    'garage' => $item['garage'] ?? null,
-                    'slug' => Str::slug($title . ' ' . $item['property_id']),
-                    'cover_photo' => $this->getPhotos($item),
-                    'videos' => $this->getVideos($item),
-                    'latitude' => $this->parseDecimal($item['latitude'] ?? null),
-                    'longitude' => $this->parseDecimal($item['longitude'] ?? null),
-                ]
+                $dataToSave
             );
         }
 
@@ -131,6 +139,7 @@ class ImobziService
                 'videos' => $this->getVideos($item),
                 'latitude' => $this->parseDecimal($item['latitude'] ?? null),
                 'longitude' => $this->parseDecimal($item['longitude'] ?? null),
+                'synced_at' => now()
             ]
         );
 
