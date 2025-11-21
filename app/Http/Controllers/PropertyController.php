@@ -29,25 +29,25 @@ class PropertyController extends Controller
                 return $this->getAllPropertiesData();
             });
         }
-        
+
         return $this->getPropertiesWithFilters($request);
     }
-    
+
     private function getAllPropertiesData() {
         $properties = Property::whereIn('status', ['available', 'Vago/Disponível'])->get();
-        
+
         $stats = [
             'total' => $properties->count(),
             'imobzi' => $properties->where('crm_origin', 'imobzi')->count(),
             'imoview' => $properties->where('crm_origin', 'imoview')->count(),
         ];
-        
+
         return response()->json([
             'data' => $properties,
             'stats' => $stats
         ]);
     }
-    
+
     private function getPropertiesWithFilters(Request $request) {
         $query = Property::query();
 
@@ -309,4 +309,32 @@ class PropertyController extends Controller
             'destaque' => $property->destaque
         ]);
     }
+
+    public function webhook(Request $request, $crm){
+
+        $data = $request->all();
+        if(!isset($data['token'])
+            || $data['token'] != 'r4IxymHtjPHLGGpLw2IMi1VzS'
+        ){
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+
+        if(!isset($data['event'])) return response()->json();
+
+        if($crm == 'imobzi'){
+            if(in_array($data['event'], ['property_updated', 'property_created'])){
+                $imobziService = new ImobziService();
+                $imobziService->property_detail(isset($data['property']) ? $data['property']['db_id'] : $data['db_id']);
+            }
+
+            if($data['event'] == 'property_deleted'){
+                Property::where('external_id', $data['db_id'])->where('crm_origin', 'imobzi')->delete();
+            }
+        }
+
+
+        return response()->json('OK');
+    }
+
 }

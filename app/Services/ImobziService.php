@@ -82,9 +82,13 @@ class ImobziService
             ->delete();
     }
 
-    public function property_detail($propertyId)
+    public function property_detail($propertyId, $nocache = false)
     {
         $cacheKey = "imobzi_property_{$propertyId}";
+
+        if($nocache){
+            Cache::delete($cacheKey);
+        }
 
         $item = Cache::remember($cacheKey, 86400, function () use ($propertyId) {
             $response = Http::withHeaders([

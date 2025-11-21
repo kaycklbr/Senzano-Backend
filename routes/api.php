@@ -47,6 +47,7 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
     $api->get('/public/post/{slug}', 'App\Http\Controllers\PostController@getBySlug');
     $api->get('/public/posts', 'App\Http\Controllers\PostController@getPublicPosts');
 
+    $api->post('/webhook/{crm}', 'App\Http\Controllers\PropertyController@webhook');
     /*
      * Authenticated routes
      */
