@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Page;
+use App\Models\Post;
 use App\Services\ImobziService;
 use App\Services\ImoviewService;
 use App\Transformers\BaseTransformer;
@@ -91,17 +92,17 @@ class PropertyController extends Controller
         $query->whereIn('status', ['available', 'Vago/Disponível']);
 
         $result = $query->paginate(20);
-        
+
         // Adicionar estatísticas
         $stats = [
             'total' => Property::whereIn('status', ['available', 'Vago/Disponível'])->count(),
             'imobzi' => Property::where('crm_origin', 'imobzi')->whereIn('status', ['available', 'Vago/Disponível'])->count(),
             'imoview' => Property::where('crm_origin', 'imoview')->whereIn('status', ['available', 'Vago/Disponível'])->count(),
         ];
-        
+
         $result = $result->toArray();
         $result['stats'] = $stats;
-        
+
         return response()->json($result);
     }
 
@@ -110,13 +111,16 @@ class PropertyController extends Controller
         $imobziProperties = Property::where('destaque', 1)->where('crm_origin', 'imobzi')->orderByRaw('RAND()')->limit(9)->get();
         $imoviewProperties = Property::where('destaque', 1)->where('crm_origin', 'imoview')->orderByRaw('RAND()')->limit(9)->get();
         $destaqueProperties = Property::where('destaque', 1)->orderByRaw('RAND()')->limit(3)->get();
+        $lancamentos = Post::where('type', 'lancamento')->where('active', 1)->orderByDesc('id')->get();
         $pages = Page::where('show_in_home', true)->where('active', 1)->get();
+
 
         return response()->json([
             'destaque' => $destaqueProperties,
             'venda' => $imobziProperties,
             'locacao' => $imoviewProperties,
-            'pages' => $pages
+            'pages' => $pages,
+            'lancamentos' => $lancamentos
         ]);
 
     }
