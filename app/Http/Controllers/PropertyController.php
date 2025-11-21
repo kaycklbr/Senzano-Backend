@@ -320,9 +320,8 @@ class PropertyController extends Controller
         }
 
 
-        if(!isset($data['event'])) return response()->json();
-
         if($crm == 'imobzi'){
+            if(!isset($data['event'])) return response()->json();
             if(in_array($data['event'], ['property_updated', 'property_created'])){
                 $imobziService = new ImobziService();
                 $imobziService->property_detail(isset($data['property']) ? $data['property']['db_id'] : $data['db_id'], true);
@@ -332,6 +331,18 @@ class PropertyController extends Controller
                 Property::where('external_id', $data['db_id'])->where('crm_origin', 'imobzi')->delete();
             }
         }
+
+        if($crm == 'imoview'){
+            if(!isset($data['tipo'])) return response()->json();
+
+            if(in_array($data['tipo'], ['Inclusao', 'Alteracao', 'AlteracaoSituacao', 'GerenciamentoFotos']) && isset($data['codigo'])){
+
+                $imoviewService = new ImoviewService();
+                $imoviewService->property_detail($data['codigo']);
+            }
+
+        }
+
 
 
         return response()->json('OK');

@@ -86,6 +86,69 @@ class ImoviewService
             ->delete();
     }
 
+    public function property_detail($external_id)
+    {
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+            'chave' => env('IMOVIEW_KEY'),
+        ])->get($this->baseUrl . '/Imovel/RetornarDetalhesImovelDisponivel', [
+            'codigoImovel' => $external_id
+        ]);
+
+        if ($response->failed()) {
+            \Log::error('Erro ao consultar detalhes Imoview', ['external_id' => $external_id, 'body' => $response->body()]);
+            return null;
+        }
+
+        $data = $response->json();
+        $item = $data['imovel'] ?? null;
+
+        if (!$item) {
+            return null;
+        }
+
+        Property::updateOrCreate(
+            [
+                'external_id' => $item['codigo'],
+                'crm_origin' => 'imoview',
+            ],
+            [
+                'title' => $item['titulo'] ?? null,
+                'description' => $item['descricao'] ?? null,
+                'sale_value' => $this->parseValue($item['valor']),
+                'rental_value' => $item['finalidade'] === 'Aluguel'
+                    ? $this->parseValue($item['valor'])
+                    : null,
+                'condominio' => $this->parseValue($item['valorcondominio']),
+                'iptu' => $this->parseValue($item['valoriptu']),
+                'property_type' => $item['tipo'] ?? null,
+                'finality' => $item['finalidade'] ?? null,
+                'destination' => $item['destinacao'] ?? null,
+                'status' => $item['situacao'] ?? null,
+                'address' => $item['endereco'] ?? null,
+                'neighborhood' => $item['bairro'] ?? null,
+                'destaque' => $item['destaque'] == 'Super destaque',
+                'city' => $item['cidade'] ?? null,
+                'state' => $item['estado'] ?? null,
+                'zipcode' => $item['cep'] ?? null,
+                'country' => 'Brasil',
+                'area_total' => $this->parseValue($item['arealote'] ?? null),
+                'area_useful' => $this->parseValue($item['areainterna'] ?? null),
+                'bedroom' => $item['numeroquartos'] ?? null,
+                'bathroom' => $item['numerobanhos'] ?? null,
+                'suite' => $item['numerosuites'] ?? null,
+                'garage' => $item['numerovagas'] ?? null,
+                'slug' => Str::slug($item['titulo'] . ' ' . $item['codigo']),
+                'cover_photo' => $this->getPhotos($item),
+                'latitude' => $this->parseDecimal($item['latitude'] ?? null),
+                'longitude' => $this->parseDecimal($item['longitude'] ?? null),
+            ]
+        );
+
+        return $item;
+    }
+
     public function saveLead($firstname, $lastname, $email, $cellphone, $countryCode = '55', $content = '', $codigoimovel = null)
     {
         $data = [
