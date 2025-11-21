@@ -325,7 +325,7 @@ class PropertyController extends Controller
         if($crm == 'imobzi'){
             if(in_array($data['event'], ['property_updated', 'property_created'])){
                 $imobziService = new ImobziService();
-                $imobziService->property_detail(isset($data['property']) ? $data['property']['db_id'] : $data['db_id']);
+                $imobziService->property_detail(isset($data['property']) ? $data['property']['db_id'] : $data['db_id'], true);
             }
 
             if($data['event'] == 'property_deleted'){
