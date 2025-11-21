@@ -58,8 +58,8 @@ class VrSyncController extends Controller
 
             // Details
             $details = $listing->addChild('Details');
-            $details->addChild('UsageType', $property->finality === 'commercial' ? 'Commercial' : 'Residential');
-            $details->addChild('PropertyType', $property->finality === 'commercial' ? 'Commercial / Office' : 'Residential / ' . $property->property_type);
+            $details->addChild('UsageType', in_array($property->destination, ['commercial', 'Comercial']) ? 'Commercial' : 'Residential');
+            $details->addChild('PropertyType', in_array($property->destination, ['commercial', 'Comercial']) ? 'Commercial / Office' : 'Residential / ' . $property->property_type);
 
             $description = $details->addChild('Description');
             $description[0] = strip_tags($property->description ?: $property->title);
@@ -67,7 +67,7 @@ class VrSyncController extends Controller
             if ($property->sale_value > 0) {
                 $details->addChild('ListPrice', $property->sale_value)->addAttribute('currency', 'BRL');
             }
-            if ($property->rental_value > 0) {
+            if ($property->rental_value > 0 && $property->crm_origin == 'imoview') {
                 $rentalPrice = $details->addChild('RentalPrice', $property->rental_value);
                 $rentalPrice->addAttribute('currency', 'BRL');
                 $rentalPrice->addAttribute('period', 'Monthly');
