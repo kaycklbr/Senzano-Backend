@@ -41,6 +41,7 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
     $api->get('/properties/{id}', 'App\Http\Controllers\PropertyController@findById');
 
     // Public routes
+    $api->get('/schemas/1.0/VRSync', 'App\Http\Controllers\VrSyncController@generateXml');
     $api->get('/public/config', 'App\Http\Controllers\SettingController@getConfig');
     $api->get('/public/page/{slug}', 'App\Http\Controllers\PageController@getBySlug');
     $api->get('/public/post/{slug}', 'App\Http\Controllers\PostController@getBySlug');
