@@ -68,7 +68,7 @@ class PageController extends Controller
     public function getBySlug($slug)
     {
         $slug = str_replace('/', '', $slug);
-        $page = static::$model::where('slug', $slug)
+        $page = static::$model::where('slug', 'like', '%'. $slug)
             ->where('active', true)
             ->first();
 
