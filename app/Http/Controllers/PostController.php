@@ -66,6 +66,7 @@ class PostController extends Controller
 
     public function getBySlug($slug)
     {
+        $slug = str_replace('/', '', $slug);
         $post = static::$model::where('slug', $slug)
             ->where('active', true)
             ->first();
