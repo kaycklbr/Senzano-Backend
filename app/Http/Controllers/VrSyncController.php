@@ -40,7 +40,7 @@ class VrSyncController extends Controller
             }
 
             $listing->addChild('PublicationType', $property->destaque ? 'PREMIUM' : 'STANDARD');
-            $listing->addChild('DetailViewUrl', "https://dev.senzanoempreendimentos.com.br/imovel/{$property->slug}");
+            $listing->addChild('DetailViewUrl', "https://senzano.com.br/imovel/{$property->slug}");
 
             // Media
             if ($property->cover_photo) {
@@ -118,7 +118,7 @@ class VrSyncController extends Controller
             $contact = $listing->addChild('ContactInfo');
             $contact->addChild('Name', 'Senzano Empreendimentos');
             $contact->addChild('Email', 'contato@senzano.com.br');
-            $contact->addChild('Website', 'https://dev.senzanoempreendimentos.com.br');
+            $contact->addChild('Website', 'https://senzano.com.br');
             $contact->addChild('Telephone', '(67) 99841-0528');
         }
 
