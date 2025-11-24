@@ -67,6 +67,10 @@ class ImobziService
                 $dataToSave['description'] = $item['address'] ?? null;
 
             }
+
+            if(!!$exists){
+                $dataToSave['synced_at'] = now();
+            }
             Property::updateOrCreate(
                 [
                     'external_id' => $item['property_id'],
