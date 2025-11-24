@@ -77,6 +77,7 @@ class Property extends BaseModel
         'videos',
         'latitude',
         'longitude',
+        'synced_at'
     ];
 
     protected $casts = [

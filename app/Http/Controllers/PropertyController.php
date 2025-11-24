@@ -9,6 +9,7 @@ use App\Services\ImoviewService;
 use App\Transformers\BaseTransformer;
 use Illuminate\Http\Request;
 use App\Models\Property;
+use Carbon\Carbon;
 
 class PropertyController extends Controller
 {
@@ -158,7 +159,8 @@ class PropertyController extends Controller
             ], 404);
         }
 
-        if($property->crm_origin == 'imobzi'){
+        if($property->crm_origin == 'imobzi' &&
+            Carbon::parse($property->synced_at)->gt(Carbon::now()->subDay())){
             $imobziService = new ImobziService();
             $imobziService->property_detail($property->external_id);
             $property = Property::where('id', $id)->orWhere('slug', $id)->first();
