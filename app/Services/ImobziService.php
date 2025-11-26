@@ -324,7 +324,7 @@ class ImobziService
                     'stage' => 6681598069047296,
                     'property_presented' => $property ? [
                         [
-                        'action' => 'POST',
+                        'action' => null,
                         'property_address' => $property->address,
                         'property_code' => $property->crm_code,
                         'property_id' => $property->external_id,
@@ -337,7 +337,7 @@ class ImobziService
                 ]
             ]);
 
-            \Log::debug('', [$dealResponse->json()]);
+            // \Log::debug('', [$dealResponse->json()]);
             if ($dealResponse->failed()) {
                 \Log::error('Erro ao criar negócio no Imobzi', ['body' => $dealResponse->body()]);
             }
