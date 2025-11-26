@@ -260,13 +260,14 @@ class ImobziService
                 'field_values' => [
                     [
                         'field_id' => 'phone',
-                        'value' =>
+                        'value' => [
                             [
                                 'alpha2Code' => 'br',
                                 'number' => $cellphone,
                                 'country_code' => $countryCode,
                                 'type' => 'main_phone'
                             ],
+                        ]
                     ],
                 ],
                 'firstname' => $firstname,
