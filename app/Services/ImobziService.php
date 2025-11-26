@@ -248,6 +248,15 @@ class ImobziService
 
     public function saveDeal($firstname, $lastname, $email, $cellphone, $countryCode = '55', $content = null)
     {
+        $contactResponse = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+            'X-Imobzi-Secret' => env('IMOBZI_SECRET'),
+        ])->get("{$this->baseUrl}/contact/exists?email=$email&phone=$cellphone");
+
+
+        return $contactResponse;
+
         $leadResponse = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
