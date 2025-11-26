@@ -299,13 +299,13 @@ class ImobziService
         }
 
         if ($content) {
-            $timelineResponse = Http::withHeaders([
+            $dealResponse = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
                 'X-Imobzi-Secret' => env('IMOBZI_SECRET'),
             ])->post("{$this->baseUrl}/deals", [
                 'deal' => [
-                    'contact_id' => $contactId,
+                    'contact_id' => strval($contactId),
                     'contact_type' => 'person',
                     'title' => "$firstname $lastname",
                     'description' => $content,
@@ -315,8 +315,8 @@ class ImobziService
                 ]
             ]);
 
-            if ($timelineResponse->failed()) {
-                \Log::error('Erro ao criar timeline no Imobzi', ['body' => $timelineResponse->body()]);
+            if ($dealResponse->failed()) {
+                \Log::error('Erro ao criar negócio no Imobzi', ['body' => $dealResponse->body()]);
             }
         }
 

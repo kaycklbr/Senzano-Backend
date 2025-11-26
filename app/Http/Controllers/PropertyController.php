@@ -276,6 +276,7 @@ class PropertyController extends Controller
                     $cellphone,
                     '55',
                     $message,
+                    $property
                 );
             }else{
                 $lead = $imobziService->saveLead(
