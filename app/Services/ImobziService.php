@@ -255,6 +255,8 @@ class ImobziService
         ])->post("{$this->baseUrl}/persons", [
             'person' => [
                 'active' => true,
+                'code' => 0,
+                'db_id' => 0,
                 'cellphone' => [
                     'alpha2Code' => 'br',
                     'number' => $cellphone,
@@ -265,6 +267,7 @@ class ImobziService
                 'lastname' => $lastname,
                 'fullname' => "$firstname $lastname",
                 'email' => $email,
+                'type' => 'person'
             ]
         ]);
 
