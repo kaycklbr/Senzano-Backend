@@ -311,7 +311,9 @@ class ImobziService
                     'description' => $content,
                     'interest' => 'buy',
                     'status' => 'in progress',
-                    'value' => $property ? $property->sale_value : 0
+                    'stage' => 6681598069047296,
+                    'pipeline_group_id' => 5364928062947328,
+                    'value' => $property ? $property->sale_value : 0.01
                 ]
             ]);
 
