@@ -325,6 +325,7 @@ class ImobziService
                 ]
             ]);
 
+            \Log::debug('', [$dealResponse->json()]);
             if ($dealResponse->failed()) {
                 \Log::error('Erro ao criar negócio no Imobzi', ['body' => $dealResponse->body()]);
             }
