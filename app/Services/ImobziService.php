@@ -246,76 +246,80 @@ class ImobziService
         return $leadData;
     }
 
-    public function saveDeal($firstname, $lastname, $email, $cellphone, $countryCode = '55', $content = null)
+    public function saveDeal($firstname, $lastname, $email, $cellphone, $countryCode = '55', $content = null, $property = null)
     {
         $contactResponse = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
             'X-Imobzi-Secret' => env('IMOBZI_SECRET'),
-        ])->get("{$this->baseUrl}/contact/exists?email=$email&phone=$cellphone");
+        ])->get("{$this->baseUrl}/contact/exists?email=$email&phone_number=$cellphone");
 
 
-        return $contactResponse->json();
+        $contactResponse = $contactResponse->json();
 
-        $leadResponse = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json',
-            'X-Imobzi-Secret' => env('IMOBZI_SECRET'),
-        ])->post("{$this->baseUrl}/persons", [
-            'person' => [
-                'active' => true,
-                'code' => 0,
-                'db_id' => 0,
-                'field_values' => [
-                    [
-                        'field_id' => 'phone',
-                        'value' => [
-                            [
-                                'alpha2Code' => 'br',
-                                'number' => $cellphone,
-                                'country_code' => $countryCode,
-                                'type' => 'main_phone'
-                            ],
-                        ]
+        if(!isset($contactResponse['contact']['db_id'])){
+            $contactResponse = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+                'X-Imobzi-Secret' => env('IMOBZI_SECRET'),
+            ])->post("{$this->baseUrl}/persons", [
+                'person' => [
+                    'active' => true,
+                    'code' => 0,
+                    'db_id' => 0,
+                    'field_values' => [
+                        [
+                            'field_id' => 'phone',
+                            'value' => [
+                                [
+                                    'alpha2Code' => 'br',
+                                    'number' => $cellphone,
+                                    'country_code' => $countryCode,
+                                    'type' => 'main_phone'
+                                ],
+                            ]
+                        ],
                     ],
-                ],
-                'firstname' => $firstname,
-                'lastname' => $lastname,
-                'fullname' => "$firstname $lastname",
-                'email' => $email,
-                'type' => 'person'
-            ]
-        ]);
+                    'firstname' => $firstname,
+                    'lastname' => $lastname,
+                    'fullname' => "$firstname $lastname",
+                    'email' => $email,
+                    'type' => 'person'
+                ]
+            ]);
 
-        if ($leadResponse->failed()) {
-            \Log::error('Erro ao criar contato no Imobzi', ['body' => $leadResponse->body()]);
-            return null;
+            if ($contactResponse->failed()) {
+                \Log::error('Erro ao criar contato no Imobzi', ['body' => $contactResponse->body()]);
+                return null;
+            }
+
+            $contactId = $contactResponse['db_id'];
+        }else{
+            $contactId = $contactResponse['contact']['db_id'];
         }
 
-        $leadData = $leadResponse->json();
-        $leadId = $leadData['db_id'];
+        if ($content) {
+            $timelineResponse = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+                'X-Imobzi-Secret' => env('IMOBZI_SECRET'),
+            ])->post("{$this->baseUrl}/deals", [
+                'deal' => [
+                    'contact_id' => $contactId,
+                    'contact_type' => 'person',
+                    'title' => "$firstname $lastname",
+                    'description' => $content,
+                    'interest' => 'buy',
+                    'status' => 'in progress',
+                    'value' => $property ? $property->sale_value : 0
+                ]
+            ]);
 
-        // if ($content) {
-        //     $timelineResponse = Http::withHeaders([
-        //         'Content-Type' => 'application/json',
-        //         'Accept' => 'application/json',
-        //         'X-Imobzi-Secret' => env('IMOBZI_SECRET'),
-        //     ])->post("{$this->baseUrl}/timeline", [
-        //         'timeline' => [
-        //             'parent_id' => $leadId,
-        //             'parent_type' => 'lead',
-        //             'links_timeline' => [],
-        //             'type' => 'note',
-        //             'content' => $content,
-        //             'users_mentioned' => []
-        //         ]
-        //     ]);
+            if ($timelineResponse->failed()) {
+                \Log::error('Erro ao criar timeline no Imobzi', ['body' => $timelineResponse->body()]);
+            }
+        }
 
-        //     if ($timelineResponse->failed()) {
-        //         \Log::error('Erro ao criar timeline no Imobzi', ['body' => $timelineResponse->body()]);
-        //     }
-        // }
-
-        return $leadData;
+        return $contactResponse;
     }
 }
