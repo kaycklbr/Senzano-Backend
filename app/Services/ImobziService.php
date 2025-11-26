@@ -257,11 +257,17 @@ class ImobziService
                 'active' => true,
                 'code' => 0,
                 'db_id' => 0,
-                'cellphone' => [
-                    'alpha2Code' => 'br',
-                    'number' => $cellphone,
-                    'country_code' => $countryCode,
-                    'type' => 'main_phone'
+                'field_values' => [
+                    [
+                        'field_id' => 'phone',
+                        'value' =>
+                            [
+                                'alpha2Code' => 'br',
+                                'number' => $cellphone,
+                                'country_code' => $countryCode,
+                                'type' => 'main_phone'
+                            ],
+                    ],
                 ],
                 'firstname' => $firstname,
                 'lastname' => $lastname,
