@@ -26,15 +26,15 @@ class ImportPropertiesCommand extends Command
      */
     public function handle(ImobziService $imobzi, ImoviewService $imoview)
     {
-        $this->info('Iniciando importação dos imóveis...');
+        \Log::info('Iniciando importação dos imóveis...');
 
         $imobzi->import();
-        $this->info('✅ Imóveis do Imobzi importados.');
+        \Log::info('✅ Imóveis do Imobzi importados.');
 
         $imoview->import();
-        $this->info('✅ Imóveis do Imoview importados.');
+        \Log::info('✅ Imóveis do Imoview importados.');
 
-        $this->info('🎯 Importação concluída.');
+        \Log::info('🎯 Importação concluída.');
         return Command::SUCCESS;
     }
 }
