@@ -252,16 +252,14 @@ class PropertyController extends Controller
 
         $property = $request->has('property_id') ? Property::find($request->property_id) : null;
 
-        $asDeal = false;
         $message = $request->message;
 
+        if($property){
+            $message = "Imóvel:" . $property->title . "\nCódigo:". ($property->crm_code ?: $property->external_id)  ."\n\nMensagem:\n".$message;
+        }
+
         if(empty($message)){
-            $asDeal = true;
-            if($property){
-                $message = "Imóvel:" . $property->title . "\nCódigo:". $property->crm_code  ."\n\nMensagem:\n".$message;
-            }else{
-                $message = "Tenho interesse em imóveis para " . ($request->type == 'venda' ? 'venda' : 'locação');
-            }
+            $message = "Tenho interesse em imóveis para " . ($request->type == 'venda' ? 'venda' : 'locação');
         }
 
         $cellphone = preg_replace('/\D/', '', $request->cellphone);
@@ -270,7 +268,7 @@ class PropertyController extends Controller
         if(($property && $property->crm_origin == 'imobzi') || ($request->has('type') && $request->type == 'venda')){
             $imobziService = new ImobziService();
 
-            if($asDeal){
+            if($request->input('deal', false) == true){
                 $lead = $imobziService->saveDeal(
                     $request->firstname,
                     $request->lastname,
