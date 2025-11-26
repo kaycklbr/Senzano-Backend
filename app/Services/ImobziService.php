@@ -255,7 +255,7 @@ class ImobziService
         ])->get("{$this->baseUrl}/contact/exists?email=$email&phone=$cellphone");
 
 
-        return $contactResponse;
+        return $contactResponse->json();
 
         $leadResponse = Http::withHeaders([
             'Content-Type' => 'application/json',
