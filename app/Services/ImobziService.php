@@ -323,12 +323,14 @@ class ImobziService
                     'status' => 'in progress',
                     'stage' => 6681598069047296,
                     'property_presented' => $property ? [
+                        [
                         'action' => 'POST',
                         'property_address' => $property->address,
                         'property_code' => $property->crm_code,
                         'property_id' => $property->external_id,
                         'source' => 'in person',
                         'seen' => true
+                        ]
                     ] : [],
                     'pipeline_group_id' => 5364928062947328,
                     'value' => $property ? $property->sale_value : 0.01
