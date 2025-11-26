@@ -245,4 +245,58 @@ class ImobziService
 
         return $leadData;
     }
+
+    public function saveDeal($firstname, $lastname, $email, $cellphone, $countryCode = '55', $content = null)
+    {
+        $leadResponse = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+            'X-Imobzi-Secret' => env('IMOBZI_SECRET'),
+        ])->post("{$this->baseUrl}/persons", [
+            'person' => [
+                'active' => true,
+                'cellphone' => [
+                    'alpha2Code' => 'br',
+                    'number' => $cellphone,
+                    'country_code' => $countryCode,
+                    'type' => 'main_phone'
+                ],
+                'firstname' => $firstname,
+                'lastname' => $lastname,
+                'fullname' => "$firstname $lastname",
+                'email' => $email,
+            ]
+        ]);
+
+        if ($leadResponse->failed()) {
+            \Log::error('Erro ao criar contato no Imobzi', ['body' => $leadResponse->body()]);
+            return null;
+        }
+
+        $leadData = $leadResponse->json();
+        $leadId = $leadData['db_id'];
+
+        // if ($content) {
+        //     $timelineResponse = Http::withHeaders([
+        //         'Content-Type' => 'application/json',
+        //         'Accept' => 'application/json',
+        //         'X-Imobzi-Secret' => env('IMOBZI_SECRET'),
+        //     ])->post("{$this->baseUrl}/timeline", [
+        //         'timeline' => [
+        //             'parent_id' => $leadId,
+        //             'parent_type' => 'lead',
+        //             'links_timeline' => [],
+        //             'type' => 'note',
+        //             'content' => $content,
+        //             'users_mentioned' => []
+        //         ]
+        //     ]);
+
+        //     if ($timelineResponse->failed()) {
+        //         \Log::error('Erro ao criar timeline no Imobzi', ['body' => $timelineResponse->body()]);
+        //     }
+        // }
+
+        return $leadData;
+    }
 }
