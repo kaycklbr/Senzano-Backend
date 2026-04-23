@@ -27,6 +27,8 @@ class ImobziService
         $apiExternalIds = [];
 
         foreach ($response->json('properties_map', []) as $item) {
+            if($item['site_publish'] == false) continue;
+
             $apiExternalIds[] = $item['property_id'];
 
             $exists = Property::where('external_id', $item['property_id'])->first();
