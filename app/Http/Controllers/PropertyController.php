@@ -39,8 +39,8 @@ class PropertyController extends Controller
 
         $stats = [
             'total' => $properties->count(),
-            'imobzi' => $properties->where('crm_origin', 'imobzi')->count(),
-            'imoview' => $properties->where('crm_origin', 'imoview')->count(),
+            'venda' => $properties->where('crm_origin', 'imoview')->where('finality', 'Venda')->count(),
+            'locacao' => $properties->where('crm_origin', 'imoview')->where('finality', 'Aluguel')->count(),
         ];
 
         return response()->json([
@@ -90,6 +90,10 @@ class PropertyController extends Controller
             $query->where('crm_origin', $request->crm_origin);
         }
 
+        if ($request->filled('finality')) {
+            $query->where('finality', $request->finality);
+        }
+
         if ($request->filled('destination')) {
             $query->where('destination', 'LIKE', '%' . $request->destination . '%');
         }
@@ -99,7 +103,10 @@ class PropertyController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('crm_code', 'LIKE', '%' . $search . '%')
                   ->orWhere('external_id', 'LIKE', '%' . $search . '%')
-                  ->orWhere('title', 'LIKE', '%' . $search . '%');
+                  ->orWhere('title', 'LIKE', '%' . $search . '%')
+                  ->orWhere('adress', 'LIKE', '%' . $search . '%')
+                  ->orWhere('neighborhood', 'LIKE', '%' . $search . '%')
+                  ->orWhere('city', 'LIKE', '%' . $search . '%');
             });
         }
 
@@ -121,8 +128,9 @@ class PropertyController extends Controller
 
         $stats = [
             'total' => Property::whereIn('status', ['available', 'Vago/Disponível'])->count(),
-            'imobzi' => Property::where('crm_origin', 'imobzi')->whereIn('status', ['available', 'Vago/Disponível'])->count(),
-            'imoview' => Property::where('crm_origin', 'imoview')->whereIn('status', ['available', 'Vago/Disponível'])->count(),
+            // 'imobzi' => Property::where('crm_origin', 'imobzi')->whereIn('status', ['available', 'Vago/Disponível'])->count(),
+            'locacao' => Property::where('crm_origin', 'imoview')->where('finality', 'Aluguel')->whereIn('status', ['available', 'Vago/Disponível'])->count(),
+            'venda' => Property::where('crm_origin', 'imoview')->where('finality', 'Venda')->whereIn('status', ['available', 'Vago/Disponível'])->count(),
         ];
 
         $result = $result->toArray();
@@ -133,8 +141,9 @@ class PropertyController extends Controller
 
     public function resume(Request $request){
 
-        $imobziProperties = Property::where('destaque', 1)->where('crm_origin', 'imobzi')->orderByRaw('RAND()')->limit(9)->get();
-        $imoviewProperties = Property::where('destaque', 1)->where('crm_origin', 'imoview')->orderByRaw('RAND()')->limit(9)->get();
+        // $imobziProperties = Property::where('destaque', 1)->where('crm_origin', 'imobzi')->orderByRaw('RAND()')->limit(9)->get();
+        $aluguelProperties = Property::where('destaque', 1)->where('crm_origin', 'imoview')->where('finality', 'Aluguel')->orderByRaw('RAND()')->limit(9)->get();
+        $vendaProperties = Property::where('destaque', 1)->where('crm_origin', 'imoview')->where('finality', 'Venda')->orderByRaw('RAND()')->limit(9)->get();
         $destaqueProperties = Property::where('destaque', 1)->orderByRaw('RAND()')->limit(3)->get();
         $lancamentos = Post::where('type', 'lancamento')->where('active', 1)->orderByDesc('id')->get();
         $pages = Page::where('show_in_home', true)->where('active', 1)->get();
@@ -142,8 +151,8 @@ class PropertyController extends Controller
 
         return response()->json([
             'destaque' => $destaqueProperties,
-            'venda' => $imobziProperties,
-            'locacao' => $imoviewProperties,
+            'venda' => $vendaProperties,
+            'locacao' => $aluguelProperties,
             'pages' => $pages,
             'lancamentos' => $lancamentos
         ]);
@@ -159,14 +168,14 @@ class PropertyController extends Controller
             ], 404);
         }
 
-        if($property->crm_origin == 'imobzi' &&
-            Carbon::parse($property->synced_at)->gt(Carbon::now()->subDay())){
-            $imobziService = new ImobziService();
-            $imobziService->property_detail($property->external_id);
-            $property = Property::where('id', $id)->orWhere('slug', $id)->first();
-        }
+        // if($property->crm_origin == 'imobzi' &&
+        //     Carbon::parse($property->synced_at)->gt(Carbon::now()->subDay())){
+        //     $imobziService = new ImobziService();
+        //     $imobziService->property_detail($property->external_id);
+        //     $property = Property::where('id', $id)->orWhere('slug', $id)->first();
+        // }
 
-        $similar = Property::where('crm_origin', $property->crm_origin)->orderByRaw('RAND()')->limit(3)->get();
+        $similar = Property::where('crm_origin', $property->crm_origin)->where('finality', $property->finality)->orderByRaw('RAND()')->limit(3)->get();
 
         $property->similar = $similar;
         return response()->json($property);
@@ -178,6 +187,10 @@ class PropertyController extends Controller
 
         if ($request->filled('crm_origin')) {
             $baseQuery->where('crm_origin', $request->crm_origin);
+        }
+
+        if ($request->filled('finality')) {
+            $baseQuery->where('finality', $request->finality);
         }
 
         // if ($request->filled('city')) {
@@ -265,49 +278,49 @@ class PropertyController extends Controller
         $cellphone = preg_replace('/\D/', '', $request->cellphone);
 
 
-        if(($property && $property->crm_origin == 'imobzi') || ($request->has('type') && $request->type == 'venda')){
-            $imobziService = new ImobziService();
+        // if(($property && $property->crm_origin == 'imobzi') || ($request->has('type') && $request->type == 'venda')){
+        //     $imobziService = new ImobziService();
 
-            if($request->input('deal', false) == true){
-                $lead = $imobziService->saveDeal(
-                    $request->firstname,
-                    $request->lastname,
-                    $request->email,
-                    $cellphone,
-                    '55',
-                    $message,
-                    $property
-                );
-            }else{
-                $lead = $imobziService->saveLead(
-                    $request->firstname,
-                    $request->lastname,
-                    $request->email,
-                    $cellphone,
-                    '55',
-                    $message,
-                );
-            }
+        //     if($request->input('deal', false) == true){
+        //         $lead = $imobziService->saveDeal(
+        //             $request->firstname,
+        //             $request->lastname,
+        //             $request->email,
+        //             $cellphone,
+        //             '55',
+        //             $message,
+        //             $property
+        //         );
+        //     }else{
+        //         $lead = $imobziService->saveLead(
+        //             $request->firstname,
+        //             $request->lastname,
+        //             $request->email,
+        //             $cellphone,
+        //             '55',
+        //             $message,
+        //         );
+        //     }
 
 
-            if (!$lead) {
-                return response()->json(['error' => 'Erro ao criar lead'], 500);
-            }
+        //     if (!$lead) {
+        //         return response()->json(['error' => 'Erro ao criar lead'], 500);
+        //     }
 
-        }else{
-            $imoviewService = new ImoviewService();
+        // }else{
+        $imoviewService = new ImoviewService();
 
-            $lead = $imoviewService->saveLead(
-                $request->firstname,
-                $request->lastname,
-                $request->email,
-                $cellphone,
-                '55',
-                $message,
-                $property ? $property->external_id : null
-            );
+        $lead = $imoviewService->saveLead(
+            $request->firstname,
+            $request->lastname,
+            $request->email,
+            $cellphone,
+            '55',
+            $message,
+            $property ? $property->external_id : null
+        );
 
-        }
+        // }
 
         return response()->json($lead);
     }

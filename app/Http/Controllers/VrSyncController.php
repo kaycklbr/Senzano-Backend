@@ -33,9 +33,9 @@ class VrSyncController extends Controller
             $listing->addChild('Title', htmlspecialchars($property->title));
 
             // TransactionType baseado no crm_origin
-            if ($property->crm_origin === 'imobzi') {
+            if ($property->finality === 'Venda') {
                 $listing->addChild('TransactionType', 'For Sale');
-            } elseif ($property->crm_origin === 'imoview') {
+            } elseif ($property->finality === 'Aluguel') {
                 $listing->addChild('TransactionType', 'For Rent');
             }
 
@@ -67,7 +67,7 @@ class VrSyncController extends Controller
             if ($property->sale_value > 0) {
                 $details->addChild('ListPrice', $property->sale_value)->addAttribute('currency', 'BRL');
             }
-            if ($property->rental_value > 0 && $property->crm_origin == 'imoview') {
+            if ($property->rental_value > 0 && $property->finality == 'Aluguel') {
                 $rentalPrice = $details->addChild('RentalPrice', $property->rental_value);
                 $rentalPrice->addAttribute('currency', 'BRL');
                 $rentalPrice->addAttribute('period', 'Monthly');
