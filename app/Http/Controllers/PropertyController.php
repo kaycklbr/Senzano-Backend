@@ -104,7 +104,7 @@ class PropertyController extends Controller
                 $q->where('crm_code', 'LIKE', '%' . $search . '%')
                   ->orWhere('external_id', 'LIKE', '%' . $search . '%')
                   ->orWhere('title', 'LIKE', '%' . $search . '%')
-                  ->orWhere('adress', 'LIKE', '%' . $search . '%')
+                  ->orWhere('address', 'LIKE', '%' . $search . '%')
                   ->orWhere('neighborhood', 'LIKE', '%' . $search . '%')
                   ->orWhere('city', 'LIKE', '%' . $search . '%');
             });
