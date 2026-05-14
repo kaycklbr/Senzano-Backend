@@ -174,7 +174,7 @@ class PropertyController extends Controller
 
     public function filters(Request $request)
     {
-        $baseQuery = Property::query();
+        $baseQuery = Property::query()->whereIn('status', ['available', 'Vago/Disponível']);
 
         if ($request->filled('crm_origin')) {
             $baseQuery->where('crm_origin', $request->crm_origin);

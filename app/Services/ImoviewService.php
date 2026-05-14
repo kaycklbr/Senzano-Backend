@@ -38,6 +38,9 @@ class ImoviewService
             foreach ($properties as $item) {
                 $apiExternalIds[] = $item['codigo'];
 
+                $area_total = $this->parseValue($item['arealote'] ?? null) ?: $this->parseValue($item['areaexterna'] ?? null);
+                $area_useful = $this->parseValue($item['areaprincipal'] ?? null) ?: $this->parseValue($item['areainterna'] ?? null);
+
                 Property::updateOrCreate(
                     [
                         'external_id' => $item['codigo'],
@@ -63,8 +66,8 @@ class ImoviewService
                         'state' => $item['estado'] ?? null,
                         'zipcode' => $item['cep'] ?? null,
                         'country' => 'Brasil',
-                        'area_total' => $this->parseValue($item['arealote'] ?? null),
-                        'area_useful' => $this->parseValue($item['areainterna'] ?? null),
+                        'area_total' => $area_total,
+                        'area_useful' => $area_useful,
                         'bedroom' => $item['numeroquartos'] ?? null,
                         'bathroom' => $item['numerobanhos'] ?? null,
                         'suite' => $item['numerosuites'] ?? null,
@@ -108,6 +111,9 @@ class ImoviewService
             return null;
         }
 
+        $area_total = $this->parseValue($item['arealote'] ?? null) ?: $this->parseValue($item['areaexterna'] ?? null);
+        $area_useful = $this->parseValue($item['areaprincipal'] ?? null) ?: $this->parseValue($item['areainterna'] ?? null);
+
         Property::updateOrCreate(
             [
                 'external_id' => $item['codigo'],
@@ -133,8 +139,8 @@ class ImoviewService
                 'state' => $item['estado'] ?? null,
                 'zipcode' => $item['cep'] ?? null,
                 'country' => 'Brasil',
-                'area_total' => $this->parseValue($item['arealote'] ?? null),
-                'area_useful' => $this->parseValue($item['areainterna'] ?? null),
+                'area_total' => $area_total,
+                'area_useful' => $area_useful,
                 'bedroom' => $item['numeroquartos'] ?? null,
                 'bathroom' => $item['numerobanhos'] ?? null,
                 'suite' => $item['numerosuites'] ?? null,

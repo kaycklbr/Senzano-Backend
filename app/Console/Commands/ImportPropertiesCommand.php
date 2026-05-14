@@ -28,8 +28,8 @@ class ImportPropertiesCommand extends Command
     {
         \Log::info('Iniciando importação dos imóveis...');
 
-        $imobzi->import();
-        \Log::info('✅ Imóveis do Imobzi importados.');
+        // $imobzi->import();
+        // \Log::info('✅ Imóveis do Imobzi importados.');
 
         $imoview->import();
         \Log::info('✅ Imóveis do Imoview importados.');
