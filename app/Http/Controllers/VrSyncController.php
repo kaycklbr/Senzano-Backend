@@ -62,7 +62,7 @@ class VrSyncController extends Controller
             $details->addChild('PropertyType', in_array($property->destination, ['commercial', 'Comercial']) ? 'Commercial / Office' : 'Residential / ' . $property->property_type);
 
             $description = $details->addChild('Description');
-            $description[0] = trim(
+            $description[0] = trim(strip_tags(
                 preg_replace(
                     '/\s+/',
                     ' ',
@@ -71,7 +71,7 @@ class VrSyncController extends Controller
                         ENT_QUOTES | ENT_HTML5,
                         'UTF-8'
                     )
-                )
+                ))
             );
 
             if ($property->sale_value > 0) {
