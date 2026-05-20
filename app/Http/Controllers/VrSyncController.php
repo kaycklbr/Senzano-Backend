@@ -62,17 +62,10 @@ class VrSyncController extends Controller
             $details->addChild('PropertyType', in_array($property->destination, ['commercial', 'Comercial']) ? 'Commercial / Office' : 'Residential / ' . $property->property_type);
 
             $description = $details->addChild('Description');
-            $description[0] = trim(strip_tags(
-                preg_replace(
-                    '/\s+/',
-                    ' ',
-                    html_entity_decode(
-                        strip_tags($property->description ?: $property->title),
-                        ENT_QUOTES | ENT_HTML5,
-                        'UTF-8'
-                    )
-                ))
-            );
+            $text = strip_tags($property->description ?: $property->title);
+            $text = str_replace(['&nbsp;', "\xC2\xA0"], ' ', $text);
+
+            $description[0] = trim(preg_replace('/\s+/', ' ', $text));
 
             if ($property->sale_value > 0) {
                 $details->addChild('ListPrice', $property->sale_value)->addAttribute('currency', 'BRL');
