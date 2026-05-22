@@ -125,6 +125,18 @@ class VrSyncController extends Controller
             $contact->addChild('Telephone', '(67) 99841-0528');
         }
 
-        return response($xml->asXML(), 200, ['Content-Type' => 'application/xml']);
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+
+        $dom->loadXML($xml->asXML());
+
+        return response(
+            $dom->saveXML(),
+            200,
+            ['Content-Type' => 'application/xml; charset=UTF-8']
+        );
+
+        // return response($xml->asXML(), 200, ['Content-Type' => 'application/xml']);
     }
 }
