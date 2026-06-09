@@ -11,5 +11,5 @@ Artisan::command('inspire', function () {
 Schedule::call(function () {
     // \Log::info('Executou via schedule!');
     Artisan::call('properties:import');
-})->everySixHours();
+})->everyFifteenMinutes();
 // Schedule::command('properties:import')->everySixHours();
