@@ -91,7 +91,7 @@ class PropertyController extends Controller
         }
 
         if ($request->filled('finality')) {
-            $finality = $request->finality == 'locacao' ? 'Aluguel' : 'Venda';
+            $finality = in_array($request->finality, ['locacao', 'Aluguel']) ? 'Aluguel' : 'Venda';
             $query->where('finality', $finality);
         }
 
