@@ -45,10 +45,12 @@ Cadastre a chave no editor antes da primeira execução com esta versão.
 Importações, consultas de detalhes e envio de leads usam essa opção, sem fallback para `IMOVIEW_KEY` do ambiente.
 Cada importação usa a mesma chave do início ao fim.
 
-- `GET /api/settings/imoview` exige JWT e retorna apenas `{"configured": true|false}`.
+- `GET /api/settings/imoview` exige JWT e retorna `configured` e `masked_key` (últimos 5 caracteres seguidos de `*****`, ou `null` sem chave).
 - `PUT /api/settings/imoview` exige JWT e recebe `{"key": "<nova chave>"}`.
-  Valida chave não vazia, até 4096 caracteres e sem quebras de linha; retorna `configured` e `message`, sem a chave.
+  Valida chave não vazia, até 4096 caracteres e sem quebras de linha; retorna `configured`, `masked_key` e `message`, sem a chave completa.
 - Ambos retornam 401 sem autenticação; o PUT retorna 422 para entradas inválidas, preservando a chave salva.
 - `/api/public/config` nunca inclui a opção `imoview_key`.
 
 As respostas das rotas genéricas de `settings` também ocultam o valor de `imoview_key`.
+
+Com uma chave salva, o painel exibe a versão mascarada e o botão Editar. O campo para a nova chave só aparece ao editar; Cancelar descarta o texto digitado.

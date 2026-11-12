@@ -14,9 +14,9 @@ class SettingController extends Controller
 
     public function getImoview()
     {
-        return response()->json([
-            'configured' => filled(Setting::where('key', Setting::IMOVIEW_KEY)->first()?->value),
-        ]);
+        $key = Setting::where('key', Setting::IMOVIEW_KEY)->first()?->value;
+
+        return response()->json($this->imoviewConfiguration($key));
     }
 
     public function putImoview(Request $request)
@@ -25,12 +25,26 @@ class SettingController extends Controller
             'key' => ['required', 'string', 'max:4096', 'not_regex:/[\r\n]/'],
         ]);
 
+        $key = trim($data['key']);
         Setting::updateOrCreate(
             ['key' => Setting::IMOVIEW_KEY],
-            ['type' => 'text', 'value' => trim($data['key'])]
+            ['type' => 'text', 'value' => $key]
         );
 
-        return response()->json(['configured' => true, 'message' => 'Chave do Imoview salva com sucesso.']);
+        return response()->json([
+            ...$this->imoviewConfiguration($key),
+            'message' => 'Chave do Imoview salva com sucesso.',
+        ]);
+    }
+
+    private function imoviewConfiguration(?string $key): array
+    {
+        $configured = filled($key);
+
+        return [
+            'configured' => $configured,
+            'masked_key' => $configured ? mb_substr($key, -5).'*****' : null,
+        ];
     }
 
     public function getConfig()
