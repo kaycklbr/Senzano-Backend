@@ -42,7 +42,6 @@ class ImobziService
                 'property_type' => $item['property_type'] ?? null,
                 'finality' => $item['finality'] ?? null,
                 'destination' => $item['finality'] ?? null,
-                // 'destaque' => $item['stage'] == 'launch',
                 'status' => $item['status'] ?? null,
                 'address' => $item['address'] ?? null,
                 'address_complement' => $item['address_complement'] ?? null,
@@ -73,11 +72,7 @@ class ImobziService
             if(!!$exists){
                 $dataToSave['synced_at'] = now();
             }
-            Property::updateOrCreate(
-                [
-                    'external_id' => $item['property_id'],
-                    'crm_origin' => 'imobzi',
-                ],
+            Property::syncFromCrm('imobzi', $item['property_id'],
                 $dataToSave
             );
         }
@@ -116,11 +111,7 @@ class ImobziService
             return null;
         }
 
-        Property::updateOrCreate(
-            [
-                'external_id' => $propertyId,
-                'crm_origin' => 'imobzi',
-            ],
+        Property::syncFromCrm('imobzi', $propertyId,
             [
                 'title' => $item['site_title'],
                 'description' => $item['site_description'] ?? null,
@@ -137,7 +128,6 @@ class ImobziService
                 'city' => $item['city'] ?? null,
                 'state' => $item['state'] ?? null,
                 'zipcode' => $item['zipcode'] ?? null,
-                // 'destaque' => $item['stage'] == 'launch',
                 'country' => $item['country'] ?? 'Brasil',
                 'area_total' => $item['lot_area'] ?? null,
                 'area_useful' => $item['useful_area'] ?? null,

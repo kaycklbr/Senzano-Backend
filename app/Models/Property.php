@@ -80,9 +80,24 @@ class Property extends BaseModel
         'synced_at'
     ];
 
+    protected $attributes = [
+        'destaque' => false,
+    ];
+
     protected $casts = [
         'destaque' => 'boolean',
     ];
+
+    public static function syncFromCrm(string $origin, string|int $externalId, array $values): static
+    {
+        // Featured status belongs to the panel and survives CRM updates.
+        unset($values['destaque']);
+
+        return static::updateOrCreate(
+            ['crm_origin' => $origin, 'external_id' => $externalId],
+            $values
+        );
+    }
 
     /**
      * @var array The attributes that should be hidden for arrays and API output

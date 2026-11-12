@@ -54,3 +54,11 @@ Cada importação usa a mesma chave do início ao fim.
 As respostas das rotas genéricas de `settings` também ocultam o valor de `imoview_key`.
 
 Com uma chave salva, o painel exibe a versão mascarada e o botão Editar. O campo para a nova chave só aparece ao editar; Cancelar descarta o texto digitado.
+
+## Em destaque
+
+O destaque pertence ao painel: a sincronização usa o CRM e o código externo para atualizar o mesmo registro,
+preservando `destaque` tanto na importação quanto nas consultas de detalhes/webhooks.
+Valores de destaque recebidos dos CRMs não substituem a escolha local, inclusive quando o usuário desmarca o destaque.
+Novos registros começam com `destaque = false`. Se o imóvel for efetivamente excluído e depois importado de novo,
+ele será um novo registro, sem recuperar o destaque antigo. A mesma regra se aplica ao serviço do Imobzi.

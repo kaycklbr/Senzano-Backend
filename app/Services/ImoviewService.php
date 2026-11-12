@@ -66,11 +66,7 @@ class ImoviewService
                 $area_total = $this->parseValue($item['arealote'] ?? null) ?: $this->parseValue($item['areaexterna'] ?? null);
                 $area_useful = $this->parseValue($item['areaprincipal'] ?? null) ?: $this->parseValue($item['areainterna'] ?? null);
 
-                $property = Property::updateOrCreate(
-                    [
-                        'external_id' => $item['codigo'],
-                        'crm_origin' => 'imoview',
-                    ],
+                $property = Property::syncFromCrm('imoview', $item['codigo'],
                     [
                         'title' => $item['titulo'] ?? null,
                         'description' => $item['descricao'] ?? null,
@@ -86,7 +82,6 @@ class ImoviewService
                         'status' => $item['situacao'] ?? null,
                         'address' => $item['endereco'] ?? null,
                         'neighborhood' => $item['bairro'] ?? null,
-                        // 'destaque' => $item['destaque'] == 'Super destaque',
                         'city' => $item['cidade'] ?? null,
                         'state' => $item['estado'] ?? null,
                         'zipcode' => $item['cep'] ?? null,
@@ -152,11 +147,7 @@ class ImoviewService
         $area_total = $this->parseValue($item['arealote'] ?? null) ?: $this->parseValue($item['areaexterna'] ?? null);
         $area_useful = $this->parseValue($item['areaprincipal'] ?? null) ?: $this->parseValue($item['areainterna'] ?? null);
 
-        Property::updateOrCreate(
-            [
-                'external_id' => $item['codigo'],
-                'crm_origin' => 'imoview',
-            ],
+        Property::syncFromCrm('imoview', $item['codigo'],
             [
                 'title' => $item['titulo'] ?? null,
                 'description' => $item['descricao'] ?? null,
@@ -172,7 +163,6 @@ class ImoviewService
                 'status' => $item['situacao'] ?? null,
                 'address' => $item['endereco'] ?? null,
                 'neighborhood' => $item['bairro'] ?? null,
-                // 'destaque' => $item['destaque'] == 'Super destaque',
                 'city' => $item['cidade'] ?? null,
                 'state' => $item['estado'] ?? null,
                 'zipcode' => $item['cep'] ?? null,

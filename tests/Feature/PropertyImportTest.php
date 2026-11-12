@@ -177,6 +177,82 @@ class PropertyImportTest extends TestCase
         Http::assertSent(fn ($request) => str_ends_with($request->url(), '/Lead/IncluirLead') && $request->hasHeader('chave', 'test-imoview-key'));
     }
 
+    public function test_import_and_details_preserve_the_featured_status_set_in_the_panel(): void
+    {
+        $featured = Property::create(['crm_origin' => 'imoview', 'external_id' => '1', 'destaque' => true]);
+        $regular = Property::create(['crm_origin' => 'imoview', 'external_id' => '2', 'destaque' => false]);
+        $otherCrm = Property::create(['crm_origin' => 'imobzi', 'external_id' => '1', 'destaque' => true]);
+        $items = [
+            array_merge($this->item(1, 'Updated title'), ['destaque' => false]),
+            array_merge($this->item(2), ['destaque' => 'Super destaque']),
+            array_merge($this->item(3), ['destaque' => 'Super destaque']),
+        ];
+        $this->fakeCrm(['*' => Http::response(['lista' => $items, 'quantidade' => 3])]);
+        [$status] = $this->runImport();
+        $this->assertSame(200, $status);
+        $this->assertTrue($featured->fresh()->destaque);
+        $this->assertFalse($regular->fresh()->destaque);
+        $this->assertTrue($otherCrm->fresh()->destaque);
+        $this->assertFalse(Property::where('crm_origin', 'imoview')->where('external_id', '3')->first()->destaque);
+        $this->assertSame('Updated title', $featured->fresh()->title);
+        $this->assertSame($featured->id, Property::where('crm_origin', 'imoview')->where('external_id', '1')->first()->id);
+
+        $this->fakeCrm(['*' => Http::response(['imovel' => array_merge($this->item(1, 'Webhook title'), ['valorcondominio' => null, 'valoriptu' => null, 'destaque' => false])])]);
+        app(\App\Services\ImoviewService::class)->property_detail(1);
+        $this->assertTrue($featured->fresh()->destaque);
+        $this->assertSame('Webhook title', $featured->fresh()->title);
+
+        $this->app['api.auth']->setUser(new \App\Models\User());
+        $this->patchJson("/api/properties/{$featured->id}/toggle-featured")->assertOk()->assertJsonPath('destaque', false);
+        app(\App\Services\ImoviewService::class)->property_detail(1);
+        $this->assertFalse($featured->fresh()->destaque, 'A manual removal of featured status must also be preserved.');
+    }
+
+    public function test_deleted_property_is_recreated_without_its_old_featured_status(): void
+    {
+        $featured = Property::create(['crm_origin' => 'imoview', 'external_id' => '1', 'destaque' => true]);
+        $oldId = $featured->id;
+        $this->fakeCrm(['*' => Http::response(['lista' => [], 'quantidade' => 0])]);
+        [$status, $report] = $this->runImport();
+        $this->assertSame(200, $status);
+        $this->assertSame(1, $report['summary']['removed']);
+        $this->assertNull(Property::find($oldId));
+
+        $this->fakeCrm(['*' => Http::response(['lista' => [$this->item(1)], 'quantidade' => 1])]);
+        [$status, $report] = $this->runImport();
+        $this->assertSame(200, $status);
+        $recreated = Property::where('crm_origin', 'imoview')->where('external_id', '1')->firstOrFail();
+        $this->assertNotSame($oldId, $recreated->id);
+        $this->assertFalse($recreated->destaque);
+        $this->assertSame(1, $report['summary']['created']);
+    }
+
+    public function test_crm_values_cannot_override_a_local_featured_choice(): void
+    {
+        $property = Property::create(['crm_origin' => 'imoview', 'external_id' => '1', 'destaque' => true]);
+        $updated = Property::syncFromCrm('imoview', 1, ['title' => 'Updated', 'destaque' => false]);
+        $this->assertSame($property->id, $updated->id);
+        $this->assertTrue($updated->destaque);
+        $created = Property::syncFromCrm('imoview', 2, ['title' => 'New', 'destaque' => true]);
+        $this->assertFalse($created->destaque);
+        $this->assertFalse($created->fresh()->destaque);
+    }
+
+    public function test_imobzi_import_and_details_also_keep_the_local_featured_status(): void
+    {
+        $featured = Property::create(['crm_origin' => 'imobzi', 'external_id' => '7', 'destaque' => true]);
+        $this->fakeCrm(['*' => Http::response(['properties_map' => [[
+            'site_publish' => true, 'property_id' => 7, 'property_type' => 'Casa', 'neighborhood' => 'Centro', 'stage' => 'regular',
+        ]]])]);
+        $service = app(\App\Services\ImobziService::class);
+        $service->import();
+        $this->assertTrue($featured->fresh()->destaque);
+        $this->fakeCrm(['*' => Http::response(['site_title' => 'Updated by Imobzi', 'stage' => 'regular'])]);
+        $service->property_detail(7, true);
+        $this->assertTrue($featured->fresh()->destaque);
+        $this->assertSame('Updated by Imobzi', $featured->fresh()->title);
+    }
+
     public function test_cli_output_includes_readable_totals(): void
     {
         $this->fakeCrm(['*' => Http::response(['lista' => [], 'quantidade' => 0])]);
