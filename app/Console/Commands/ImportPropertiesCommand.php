@@ -2,39 +2,59 @@
 
 namespace App\Console\Commands;
 
+use App\Services\ImoviewService;
+use App\Services\PropertyImportReport;
 use Illuminate\Console\Command;
-use App\Services\{ImobziService, ImoviewService};
+use Illuminate\Support\Facades\Cache;
+use Throwable;
 
 class ImportPropertiesCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'properties:import';
+    protected $signature = 'properties:import {--json : Retorna o relatório da execução em JSON}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
+    protected $description = 'Sincroniza os imóveis do Imoview e remove os indisponíveis após uma consulta completa';
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(ImobziService $imobzi, ImoviewService $imoview)
+    public function handle(ImoviewService $imoview): int
     {
-        \Log::info('Iniciando importação dos imóveis...');
+        $report = new PropertyImportReport();
+        $lock = null;
+        $acquired = false;
 
-        // $imobzi->import();
-        // \Log::info('✅ Imóveis do Imobzi importados.');
+        try {
+            // The panel, scheduler and CLI must all share the same lock.
+            $lock = Cache::lock('properties:import', 86400);
+            $acquired = $lock->get();
 
-        $imoview->import();
-        \Log::info('✅ Imóveis do Imoview importados.');
+            if (! $acquired) {
+                $result = $report->finish('conflict', 'Já existe uma importação em andamento. Aguarde a conclusão antes de tentar novamente.');
+                $exitCode = 2;
+            } else {
+                set_time_limit(0);
+                $report->log('Iniciando sincronização dos imóveis do Imoview.');
+                $imoview->import($report);
+                $result = $report->finish('completed', 'Importação concluída com sucesso.');
+                $exitCode = Command::SUCCESS;
+            }
+        } catch (Throwable $exception) {
+            $report->summary['errors']++;
+            // Technical details stay on the server, outside the panel response.
+            $report->logger()->error('Falha técnica na importação.', ['exception' => $exception]);
+            $result = $report->finish('failed', 'A importação falhou. Os registros já sincronizados foram mantidos; a remoção de imóveis indisponíveis não foi concluída.');
+            $exitCode = Command::FAILURE;
+        } finally {
+            if ($acquired) {
+                $lock->release();
+            }
+        }
 
-        \Log::info('🎯 Importação concluída.');
-        return Command::SUCCESS;
+        if ($this->option('json')) {
+            $this->output->writeln(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+        } else {
+            foreach ($result['logs'] as $entry) {
+                $this->line("[{$entry['timestamp']}] {$entry['level']}: {$entry['message']}");
+            }
+        }
+
+        return $exitCode;
     }
 }

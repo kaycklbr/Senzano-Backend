@@ -310,6 +310,29 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Properties",
+			"item": [
+				{
+					"name": "Import properties (synchronous)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminJWT}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": "{{HOST}}/api/properties/import",
+						"description": "Executes properties:import synchronously. No body. Wait for completion; do not retry automatically. 200 completed, 409 another import running, 500 failed with partial summary and isolated logs. See docs/property-import.md."
+					}
+				}
+			]
 		}
 	]
 }

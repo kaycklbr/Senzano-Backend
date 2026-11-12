@@ -10,38 +10,61 @@ class ImoviewService
 {
     protected string $baseUrl = 'https://api.imoview.com.br';
 
-    public function import()
+    public function import(PropertyImportReport $report): void
     {
         $page = 1;
         $total = 0;
         $apiExternalIds = [];
+        $expectedTotal = null;
 
         do {
+            $report->log("Consultando página {$page} do Imoview (até 20 imóveis).");
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
                 'chave' => env('IMOVIEW_KEY'),
-            ])->post($this->baseUrl.'/Imovel/RetornarImoveisDisponiveis', [
+            ])->connectTimeout(10)->timeout(60)->post($this->baseUrl.'/Imovel/RetornarImoveisDisponiveis', [
                 'numeroPagina' => $page,
                 'numeroRegistros' => 20,
             ]);
 
             if ($response->failed()) {
-                \Log::error('Erro ao consultar Imoview', ['body' => $response->body()]);
-                break;
+                $report->log("Falha ao consultar a página {$page}: HTTP {$response->status()}. Remoção cancelada.", 'error');
+                throw new \RuntimeException('Falha na consulta ao Imoview.');
             }
 
             $data = $response->json();
-            $properties = $data['lista'] ?? [];
-            $total = $data['quantidade'] ?? 0;
+            if (! is_array($data) || ! isset($data['lista'], $data['quantidade'])
+                || ! is_array($data['lista']) || ! array_is_list($data['lista'])
+                || ! preg_match('/^\d+$/', (string) $data['quantidade'])) {
+                $report->log("Resposta inválida na página {$page}. Remoção cancelada.", 'error');
+                throw new \RuntimeException('Resposta inválida do Imoview.');
+            }
+
+            $properties = $data['lista'];
+            $total = (int) $data['quantidade'];
+            $expectedTotal ??= $total;
+            $report->summary['pages']++;
+            $report->summary['received'] += count($properties);
+
+            if ($total !== $expectedTotal || (empty($properties) && count($apiExternalIds) < $total)) {
+                $report->log("Listagem incompleta ou alterada durante a consulta na página {$page}. Remoção cancelada; execute novamente.", 'error');
+                throw new \RuntimeException('Paginação inconsistente do Imoview.');
+            }
+            $report->log("Página {$page}: " . count($properties) . " imóveis recebidos; total informado: {$total}.");
 
             foreach ($properties as $item) {
-                $apiExternalIds[] = $item['codigo'];
+                if (! is_array($item) || ! isset($item['codigo']) || ! is_scalar($item['codigo'])
+                    || trim((string) $item['codigo']) === '' || isset($apiExternalIds[(string) $item['codigo']])) {
+                    $report->log("Imóvel sem código válido ou duplicado na página {$page}. Remoção cancelada.", 'error');
+                    throw new \RuntimeException('Código de imóvel inválido ou duplicado.');
+                }
+                $apiExternalIds[(string) $item['codigo']] = $item['codigo'];
 
                 $area_total = $this->parseValue($item['arealote'] ?? null) ?: $this->parseValue($item['areaexterna'] ?? null);
                 $area_useful = $this->parseValue($item['areaprincipal'] ?? null) ?: $this->parseValue($item['areainterna'] ?? null);
 
-                Property::updateOrCreate(
+                $property = Property::updateOrCreate(
                     [
                         'external_id' => $item['codigo'],
                         'crm_origin' => 'imoview',
@@ -49,12 +72,12 @@ class ImoviewService
                     [
                         'title' => $item['titulo'] ?? null,
                         'description' => $item['descricao'] ?? null,
-                        'sale_value' => $this->parseValue($item['valor']),
-                        'rental_value' => $item['finalidade'] === 'Aluguel'
-                            ? $this->parseValue($item['valor'])
+                        'sale_value' => $this->parseValue($item['valor'] ?? null),
+                        'rental_value' => ($item['finalidade'] ?? null) === 'Aluguel'
+                            ? $this->parseValue($item['valor'] ?? null)
                             : null,
-                        'condominio' => $this->parseValue($item['valorcondominio']),
-                        'iptu' => $this->parseValue($item['valoriptu']),
+                        'condominio' => $this->parseValue($item['valorcondominio'] ?? null),
+                        'iptu' => $this->parseValue($item['valoriptu'] ?? null),
                         'property_type' => $item['tipo'] ?? null,
                         'finality' => $item['finalidade'] ?? null,
                         'destination' => $item['destinacao'] ?? null,
@@ -72,21 +95,34 @@ class ImoviewService
                         'bathroom' => $item['numerobanhos'] ?? null,
                         'suite' => $item['numerosuites'] ?? null,
                         'garage' => $item['numerovagas'] ?? null,
-                        'slug' => Str::slug($item['titulo'] . ' ' . $item['codigo']),
+                        'slug' => Str::slug(($item['titulo'] ?? '') . ' ' . $item['codigo']),
                         'cover_photo' => $this->getPhotos($item),
                         'latitude' => $this->parseDecimal($item['latitude'] ?? null),
                         'longitude' => $this->parseDecimal($item['longitude'] ?? null),
+                        'synced_at' => now(),
                     ]
                 );
+
+                $changes = array_diff_key($property->getChanges(), array_flip(['updated_at', 'synced_at']));
+                $outcome = $property->wasRecentlyCreated ? 'created' : (empty($changes) ? 'unchanged' : 'updated');
+                $report->summary[$outcome]++;
+                $report->summary['synced']++;
             }
 
+            $report->log("Página {$page} sincronizada. Acumulado: {$report->summary['synced']} imóveis sincronizados.");
             $page++;
         } while (($page - 1) * 20 < $total);
 
-        // Remove registros que não existem mais na API
-        Property::where('crm_origin', 'imoview')
-            ->whereNotIn('external_id', $apiExternalIds)
+        if (count($apiExternalIds) !== $total) {
+            $report->log('O total de códigos únicos recebidos difere do total informado pelo Imoview. Remoção cancelada.', 'error');
+            throw new \RuntimeException('Listagem incompleta do Imoview.');
+        }
+
+        $report->log('Consulta completa. Removendo somente imóveis do Imoview ausentes na listagem recebida.');
+        $report->summary['removed'] = Property::where('crm_origin', 'imoview')
+            ->whereNotIn('external_id', array_values($apiExternalIds))
             ->delete();
+        $report->log("Remoção concluída: {$report->summary['removed']} imóveis indisponíveis removidos.");
     }
 
     public function property_detail($external_id)

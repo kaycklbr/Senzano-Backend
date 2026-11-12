@@ -122,6 +122,7 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
         /*
          * Properties
          */
+        $api->post('/properties/import', 'App\Http\Controllers\PropertyImportController@store');
         $api->patch('/properties/{id}/toggle-featured', 'App\Http\Controllers\PropertyController@toggleFeatured');
     });
 });
