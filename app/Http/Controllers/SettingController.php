@@ -43,7 +43,7 @@ class SettingController extends Controller
 
         return [
             'configured' => $configured,
-            'masked_key' => $configured ? mb_substr($key, -5).'*****' : null,
+            'masked_key' => $configured ? '*****'.mb_substr($key, -5) : null,
         ];
     }
 

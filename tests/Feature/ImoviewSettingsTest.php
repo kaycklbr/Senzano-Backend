@@ -37,22 +37,22 @@ class ImoviewSettingsTest extends TestCase
         $this->app['api.auth']->setUser(new User());
         $this->getJson('/api/settings/imoview')->assertOk()->assertExactJson(['configured' => false, 'masked_key' => null]);
         $response = $this->putJson('/api/settings/imoview', ['key' => '  first-test-key  ']);
-        $response->assertOk()->assertJsonPath('configured', true)->assertJsonPath('masked_key', 't-key*****');
+        $response->assertOk()->assertJsonPath('configured', true)->assertJsonPath('masked_key', '*****t-key');
         $this->assertStringNotContainsString('first-test-key', $response->getContent());
         $setting = Setting::where('key', Setting::IMOVIEW_KEY)->firstOrFail();
         $this->assertSame('first-test-key', $setting->value);
         $this->assertArrayNotHasKey('value', $setting->toArray());
         $this->assertNotSame('first-test-key', DB::table('settings')->value('value'));
-        $this->getJson('/api/settings/imoview')->assertExactJson(['configured' => true, 'masked_key' => 't-key*****']);
+        $this->getJson('/api/settings/imoview')->assertExactJson(['configured' => true, 'masked_key' => '*****t-key']);
         $this->putJson('/api/settings/imoview', ['key' => 'replacement-test-key'])->assertOk();
         $this->assertSame(1, Setting::count());
         $this->assertSame('replacement-test-key', $setting->fresh()->value);
     }
 
-    public function test_preview_only_returns_the_last_five_characters_followed_by_asterisks(): void
+    public function test_preview_masks_the_prefix_and_only_returns_the_last_five_characters(): void
     {
         $this->app['api.auth']->setUser(new User());
-        foreach (['private-prefix-ABCDE' => 'ABCDE*****', 'other-prefix-12345' => '12345*****'] as $key => $preview) {
+        foreach (['private-prefix-ABCDE' => '*****ABCDE', 'other-prefix-12345' => '*****12345'] as $key => $preview) {
             $this->putJson('/api/settings/imoview', ['key' => $key])->assertOk()->assertJsonPath('masked_key', $preview)->assertDontSee($key);
             $this->getJson('/api/settings/imoview')->assertOk()->assertExactJson(['configured' => true, 'masked_key' => $preview])->assertDontSee($key);
         }
