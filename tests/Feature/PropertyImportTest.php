@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Property;
+use App\Models\Setting;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Artisan;
@@ -16,7 +17,9 @@ class PropertyImportTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:', 'cache.default' => 'array']);
+        config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:', 'database.connections.sqlite.url' => null, 'cache.default' => 'array']);
+        (require database_path('migrations/2025_11_11_195833_create_settings_table.php'))->up();
+        Setting::create(['key' => Setting::IMOVIEW_KEY, 'type' => 'text', 'value' => 'test-imoview-key']);
         Http::preventStrayRequests();
         Schema::create('properties', function (Blueprint $table) {
             $table->id();
@@ -142,6 +145,36 @@ class PropertyImportTest extends TestCase
         } finally {
             $lock->release();
         }
+    }
+
+    public function test_missing_key_stops_import_without_using_the_environment(): void
+    {
+        Setting::where('key', Setting::IMOVIEW_KEY)->delete();
+        putenv('IMOVIEW_KEY=unused-environment-key');
+        $this->fakeCrm();
+        try {
+            [$status, $report] = $this->runImport();
+            $this->assertSame(500, $status);
+            $this->assertStringContainsString('Configure e salve a chave', json_encode($report['logs']));
+            $this->assertSame(0, $report['summary']['removed']);
+            Http::assertNothingSent();
+        } finally {
+            putenv('IMOVIEW_KEY');
+        }
+    }
+
+    public function test_saved_key_authenticates_import_details_and_leads(): void
+    {
+        $this->fakeCrm(['*' => Http::response(['lista' => [], 'quantidade' => 0])]);
+        [$status] = $this->runImport();
+        $this->assertSame(200, $status);
+        $service = app(\App\Services\ImoviewService::class);
+        $service->property_detail(123);
+        $service->saveLead('Teste', 'Local', 'test@example.com', '11999999999');
+        Http::assertSentCount(3);
+        Http::assertSent(fn ($request) => str_ends_with($request->url(), '/Imovel/RetornarImoveisDisponiveis') && $request->hasHeader('chave', 'test-imoview-key'));
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/Imovel/RetornarDetalhesImovelDisponivel') && $request->hasHeader('chave', 'test-imoview-key'));
+        Http::assertSent(fn ($request) => str_ends_with($request->url(), '/Lead/IncluirLead') && $request->hasHeader('chave', 'test-imoview-key'));
     }
 
     public function test_cli_output_includes_readable_totals(): void

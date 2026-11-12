@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use App\Models\Property;
+use App\Models\Setting;
 use Illuminate\Support\Str;
 
 class ImoviewService
@@ -12,6 +13,7 @@ class ImoviewService
 
     public function import(PropertyImportReport $report): void
     {
+        $apiKey = $this->apiKey($report);
         $page = 1;
         $total = 0;
         $apiExternalIds = [];
@@ -22,7 +24,7 @@ class ImoviewService
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
-                'chave' => env('IMOVIEW_KEY'),
+                'chave' => $apiKey,
             ])->connectTimeout(10)->timeout(60)->post($this->baseUrl.'/Imovel/RetornarImoveisDisponiveis', [
                 'numeroPagina' => $page,
                 'numeroRegistros' => 20,
@@ -130,7 +132,7 @@ class ImoviewService
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-            'chave' => env('IMOVIEW_KEY'),
+            'chave' => $this->apiKey(),
         ])->get($this->baseUrl . '/Imovel/RetornarDetalhesImovelDisponivel', [
             'codigoImovel' => $external_id
         ]);
@@ -209,7 +211,7 @@ class ImoviewService
         $leadResponse = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-            'chave' => env('IMOVIEW_KEY')
+            'chave' => $this->apiKey()
         ])->post("{$this->baseUrl}/Lead/IncluirLead", $data);
 
         if ($leadResponse->failed()) {
@@ -220,6 +222,19 @@ class ImoviewService
         $leadData = $leadResponse->json();
 
         return $leadData;
+    }
+
+    private function apiKey(?PropertyImportReport $report = null): string
+    {
+        $key = trim((string) Setting::where('key', Setting::IMOVIEW_KEY)->first()?->value);
+
+        if ($key === '') {
+            $message = 'Configure e salve a chave do Imoview na tela de importação antes de continuar.';
+            $report?->log($message, 'error');
+            throw new \RuntimeException($message);
+        }
+
+        return $key;
     }
 
     private function parseValue($value)

@@ -36,3 +36,19 @@ Verificação local isolada, sem acessar o CRM ou o banco configurado no `.env`:
 ```sh
 php vendor/bin/phpunit -c phpunit.import.xml
 ```
+
+## Chave do Imoview
+
+Na tela `/admin/importacao`, o editor salva a chave em `settings`, opção `imoview_key`,
+criptografada com a chave da aplicação. Não exige alteração de esquema ou migration.
+Cadastre a chave no editor antes da primeira execução com esta versão.
+Importações, consultas de detalhes e envio de leads usam essa opção, sem fallback para `IMOVIEW_KEY` do ambiente.
+Cada importação usa a mesma chave do início ao fim.
+
+- `GET /api/settings/imoview` exige JWT e retorna apenas `{"configured": true|false}`.
+- `PUT /api/settings/imoview` exige JWT e recebe `{"key": "<nova chave>"}`.
+  Valida chave não vazia, até 4096 caracteres e sem quebras de linha; retorna `configured` e `message`, sem a chave.
+- Ambos retornam 401 sem autenticação; o PUT retorna 422 para entradas inválidas, preservando a chave salva.
+- `/api/public/config` nunca inclui a opção `imoview_key`.
+
+As respostas das rotas genéricas de `settings` também ocultam o valor de `imoview_key`.

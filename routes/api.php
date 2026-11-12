@@ -99,6 +99,8 @@ $api->version('v1', ['middleware' => ['api']], function (Router $api) {
          * Settings
          */
         $api->group(['prefix' => 'settings'], function (Router $api) {
+            $api->get('/imoview', 'App\Http\Controllers\SettingController@getImoview');
+            $api->put('/imoview', 'App\Http\Controllers\SettingController@putImoview');
             $api->get('/', 'App\Http\Controllers\SettingController@getAll');
             $api->get('/{id}', 'App\Http\Controllers\SettingController@get');
             $api->post('/', 'App\Http\Controllers\SettingController@post');

@@ -4,10 +4,13 @@ namespace App\Models;
 
 use App\Transformers\BaseTransformer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Crypt;
 
 class Setting extends BaseModel
 {
     use HasFactory;
+
+    public const IMOVIEW_KEY = 'imoview_key';
 
     /**
      * @var string Primary key of the resource
@@ -34,8 +37,19 @@ class Setting extends BaseModel
         'value' => 'string',
     ];
 
+    public function getHidden(): array
+    {
+        return $this->key === self::IMOVIEW_KEY
+            ? array_merge(parent::getHidden(), ['value'])
+            : parent::getHidden();
+    }
+
     public function getValueAttribute($value)
     {
+        if ($this->key === self::IMOVIEW_KEY && filled($value)) {
+            return Crypt::decryptString($value);
+        }
+
         if ($this->type === 'json') {
             return json_decode($value, true);
         }
@@ -47,6 +61,11 @@ class Setting extends BaseModel
 
     public function setValueAttribute($value)
     {
+        if ($this->key === self::IMOVIEW_KEY) {
+            $this->attributes['value'] = filled($value) ? Crypt::encryptString(trim($value)) : null;
+            return;
+        }
+
         if ($this->type === 'json') {
             $this->attributes['value'] = json_encode($value);
         } else {

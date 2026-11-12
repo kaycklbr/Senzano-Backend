@@ -5,6 +5,7 @@
     <testsuites>
         <testsuite name="Property import">
             <file>tests/Feature/PropertyImportTest.php</file>
+            <file>tests/Feature/ImoviewSettingsTest.php</file>
         </testsuite>
     </testsuites>
     <php>
